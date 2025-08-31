@@ -698,6 +698,7 @@ return array (
       'mnuUserSecurity' => 
       array (
         'label' => 'User Security',
+        'url' => '/tls/systems/user-security.php',
       ),
       'mnuEDIUserProfile' => 
       array (
