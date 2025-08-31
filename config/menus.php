@@ -7,627 +7,717 @@
  * @version 1.0
  */
 
-return [
-    'file' => [
-        'label' => 'File',
-        'icon' => 'bi-files',
-        'items' => [
-            'mnuExit' => [
-                'label' => 'Exit',
-                'icon' => 'bi-box-arrow-right',
-                'url' => '/logout.php'
-            ]
-        ]
-    ],
-    
-    'accounting' => [
-        'label' => 'Accounting',
-        'icon' => 'bi-calculator',
-        'items' => [
-            'gl' => [
-                'label' => 'G/L',
-                'icon' => 'bi-journal-text',
-                'items' => [
-                    'mnuCOAMaint' => [
-                        'label' => 'Chart of Account Maintenance',
-                        'url' => '/accounting/coa-maintenance.php'
-                    ],
-                    'mnuGLAccoutHistory' => [
-                        'label' => 'Account History',
-                        'url' => '/accounting/account-history.php'
-                    ],
-                    'mnuTransactionSearch' => [
-                        'label' => 'Transaction Search',
-                        'url' => '/accounting/transaction-search.php'
-                    ],
-                    'separator1' => ['separator' => true],
-                    'mnuJE' => [
-                        'label' => 'Journal Entry',
-                        'url' => '/accounting/journal-entry.php'
-                    ],
-                    'mnuBankRec' => [
-                        'label' => 'Bank Reconciliation',
-                        'url' => '/accounting/bank-reconciliation.php'
-                    ],
-                    'separator2' => ['separator' => true],
-                    'reports' => [
-                        'label' => 'Reports',
-                        'icon' => 'bi-file-earmark-text',
-                        'items' => [
-                            'mnuChartofAccounts' => [
-                                'label' => 'Chart of Accounts',
-                                'url' => '/accounting/reports/chart-of-accounts.php'
-                            ],
-                            'separator3' => ['separator' => true],
-                            'mnuBalanceSheet' => [
-                                'label' => 'Balance Sheet',
-                                'url' => '/accounting/reports/balance-sheet.php'
-                            ],
-                            'mnuIncomeStatement' => [
-                                'label' => 'Income Statement',
-                                'url' => '/accounting/reports/income-statement.php'
-                            ],
-                            'mnuTrialBalance' => [
-                                'label' => 'Trial Balance',
-                                'url' => '/accounting/reports/trial-balance.php'
-                            ],
-                            'mnuDailyBalance' => [
-                                'label' => 'Daily Balance Summary',
-                                'url' => '/accounting/reports/daily-balance.php'
-                            ],
-                            'mnuFinStmt' => [
-                                'label' => 'All Financial Statements',
-                                'url' => '/accounting/reports/financial-statements.php'
-                            ],
-                            'separator4' => ['separator' => true],
-                            'mnuGeneralLedger' => [
-                                'label' => 'General Ledger',
-                                'url' => '/accounting/reports/general-ledger.php'
-                            ],
-                            'mnuTransactionJournal' => [
-                                'label' => 'Transaction Journal',
-                                'url' => '/accounting/reports/transaction-journal.php'
-                            ],
-                            'mnuOOAR' => [
-                                'label' => 'Owner Operator Accounts Receivable',
-                                'url' => '/accounting/reports/oo-ar.php'
-                            ],
-                            'mnuAPJournal' => [
-                                'label' => 'AP Journal',
-                                'url' => '/accounting/reports/ap-journal.php'
-                            ]
-                        ]
-                    ],
-                    'separator5' => ['separator' => true],
-                    'mnuGLExport' => [
-                        'label' => 'GL Export',
-                        'url' => '/accounting/gl-export.php'
-                    ]
-                ]
-            ],
-            'ap' => [
-                'label' => 'A/P',
-                'icon' => 'bi-credit-card',
-                'items' => [
-                    'mnuVendorMaint' => [
-                        'label' => 'Vendor Maintenance',
-                        'url' => '/accounting/vendor-maintenance.php'
-                    ],
-                    'mnuVendorHist' => [
-                        'label' => 'Vendor History',
-                        'url' => '/accounting/vendor-history.php'
-                    ],
-                    'mnuInvoiceSearch' => [
-                        'label' => 'Invoice Search',
-                        'url' => '/accounting/invoice-search.php'
-                    ],
-                    'separator6' => ['separator' => true],
-                    'mnuVoucher' => [
-                        'label' => 'Voucher Entry',
-                        'url' => '/accounting/voucher-entry.php'
-                    ],
-                    'mnuAPInvoiceApproval' => [
-                        'label' => 'Invoice Approval',
-                        'url' => '/accounting/invoice-approval.php'
-                    ],
-                    'separator7' => ['separator' => true],
-                    'mnuPayables' => [
-                        'label' => 'Process Checks',
-                        'url' => '/accounting/process-checks.php'
-                    ],
-                    'separator8' => ['separator' => true],
-                    'mnuProcessICCheck' => [
-                        'label' => 'Process Inter-Company Checks',
-                        'url' => '/accounting/intercompany-checks.php'
-                    ]
-                ]
-            ],
-            'ar' => [
-                'label' => 'A/R',
-                'icon' => 'bi-receipt',
-                'items' => [
-                    'mnuCollections' => [
-                        'label' => 'Collections Work',
-                        'url' => '/accounting/collections.php'
-                    ],
-                    'mnuReapplyPmt' => [
-                        'label' => 'Reapply Payments',
-                        'url' => '/accounting/reapply-payments.php'
-                    ],
-                    'mnuARDeposit' => [
-                        'label' => 'Deposit Entry',
-                        'url' => '/accounting/deposit-entry.php'
-                    ],
-                    'mnuDepositLookup' => [
-                        'label' => 'Deposit Lookup',
-                        'url' => '/accounting/deposit-lookup.php'
-                    ],
-                    'mnuLoadLookup' => [
-                        'label' => 'Load Lookup',
-                        'url' => '/accounting/load-lookup.php'
-                    ],
-                    'separator9' => ['separator' => true],
-                    'mnuBillingEntry' => [
-                        'label' => 'Billing Entry',
-                        'url' => '/accounting/billing-entry.php'
-                    ],
-                    'mnuCustMaint' => [
-                        'label' => 'Customer Maintenance',
-                        'url' => '/accounting/customer-maintenance.php'
-                    ],
-                    'mnuloadreg' => [
-                        'label' => 'Loads Billed Register',
-                        'url' => '/accounting/loads-billed-register.php'
-                    ],
-                    'separator10' => ['separator' => true],
-                    'ar_reports' => [
-                        'label' => 'Reports',
-                        'items' => [
-                            'mnuUnbilledLoads' => [
-                                'label' => 'Unbilled Loads',
-                                'url' => '/accounting/reports/unbilled-loads.php'
-                            ],
-                            'mnuUnbilledWithPaperwork' => [
-                                'label' => 'Unbilled Loads with Paperwork',
-                                'url' => '/accounting/reports/unbilled-with-paperwork.php'
-                            ]
-                        ]
-                    ],
-                    'separator11' => ['separator' => true],
-                    'mnuPrintBatch' => [
-                        'label' => 'Print Batch of Invoices',
-                        'url' => '/accounting/print-batch-invoices.php'
-                    ]
-                ]
-            ],
-            'pr' => [
-                'label' => 'P/R',
-                'icon' => 'bi-people',
-                'items' => [
-                    'mnuDriverPRMaint' => [
-                        'label' => 'Driver Payroll Maintenance',
-                        'url' => '/accounting/driver-pr-maintenance.php'
-                    ],
-                    'mnuTrialDriverPR' => [
-                        'label' => 'Run Trial Driver PR',
-                        'url' => '/accounting/trial-driver-pr.php'
-                    ],
-                    'mnuPreviewDriverPR' => [
-                        'label' => 'Preview Driver PR',
-                        'url' => '/accounting/preview-driver-pr.php'
-                    ],
-                    'mnuFinalizeDriverPR' => [
-                        'label' => 'Finalize Driver PR',
-                        'url' => '/accounting/finalize-driver-pr.php'
-                    ]
-                ]
-            ]
-        ]
-    ],
-    
-    'dispatch' => [
-        'label' => 'Dispatch',
-        'icon' => 'bi-truck',
-        'items' => [
-            'mnuEDILoads' => [
-                'label' => 'Available EDI Loads',
-                'url' => '/dispatch/edi-loads.php'
-            ],
-            'separator12' => ['separator' => true],
-            'mnuLoadEntry' => [
-                'label' => 'Load Entry',
-                'url' => '/dispatch/load-entry.php'
-            ],
-            'mnuAvailLoads' => [
-                'label' => 'Loads Available for Dispatch',
-                'url' => '/dispatch/available-loads.php'
-            ],
-            'mnuLoadInq' => [
-                'label' => 'Load Inquiry',
-                'url' => '/dispatch/load-inquiry.php'
-            ],
-            'mnuCreditCheck' => [
-                'label' => 'Customer Credit Check',
-                'url' => '/dispatch/credit-check.php'
-            ],
-            'mnuExceptionStatusList' => [
-                'label' => 'Exception Status List',
-                'url' => '/dispatch/exception-status.php'
-            ],
-            'separator13' => ['separator' => true],
-            'mnuLookupLoads' => [
-                'label' => 'Lookup Loads by Location',
-                'url' => '/dispatch/lookup-loads.php'
-            ],
-            'mnuDailyCount' => [
-                'label' => 'Daily Count',
-                'url' => '/dispatch/daily-count.php'
-            ],
-            'mnuUnitHistory' => [
-                'label' => 'Unit History',
-                'url' => '/dispatch/unit-history.php'
-            ],
-            'mnuUnitLastDel' => [
-                'label' => 'Unit Last Delivery',
-                'url' => '/dispatch/unit-last-delivery.php'
-            ],
-            'mnuAgentHistory' => [
-                'label' => 'Agent History',
-                'url' => '/dispatch/agent-history.php'
-            ],
-            'mnuLocationMaint' => [
-                'label' => 'Location Maintenance',
-                'url' => '/dispatch/location-maintenance.php'
-            ],
-            'mnuTrailerPool' => [
-                'label' => 'Trailer Pool Maintenance',
-                'url' => '/dispatch/trailer-pool.php'
-            ],
-            'mnuLoadTrailerStatus' => [
-                'label' => 'Load Trailer Status',
-                'url' => '/dispatch/load-trailer-status.php'
-            ],
-            'separator14' => ['separator' => true],
-            'mnuEFSLoadCash' => [
-                'label' => 'EFS Load Cash',
-                'url' => '/dispatch/efs-load-cash.php'
-            ]
-        ]
-    ],
-    
-    'logistics' => [
-        'label' => 'Logistics',
-        'icon' => 'bi-diagram-3',
-        'items' => [
-            'mnuAvailEDI' => [
-                'label' => 'Available EDI Loads',
-                'url' => '/logistics/edi-loads.php'
-            ],
-            'separator15' => ['separator' => true],
-            'mnuLoadEntryLog' => [
-                'label' => 'Load Entry',
-                'url' => '/logistics/load-entry.php'
-            ],
-            'mnuAvailTrucks' => [
-                'label' => 'Available Trucks/Loads',
-                'url' => '/logistics/available-trucks.php'
-            ],
-            'mnuLoadInqLog' => [
-                'label' => 'Load Inquiry',
-                'url' => '/logistics/load-inquiry.php'
-            ],
-            'mnuCreditCheckLog' => [
-                'label' => 'Customer Credit Check',
-                'url' => '/logistics/credit-check.php'
-            ],
-            'mnuLookupLoadsLog' => [
-                'label' => 'Lookup Loads by Location',
-                'url' => '/logistics/lookup-loads.php'
-            ],
-            'mnuBrokerTracking' => [
-                'label' => 'Broker Tracking',
-                'url' => '/logistics/broker-tracking.php'
-            ],
-            'separator16' => ['separator' => true],
-            'mnuCarrierMaint' => [
-                'label' => 'Carrier Maintenance',
-                'url' => '/logistics/carrier-maintenance.php'
-            ],
-            'mnuCarrierHistory' => [
-                'label' => 'Carrier History',
-                'url' => '/logistics/carrier-history.php'
-            ],
-            'mnuCarrierCheck' => [
-                'label' => 'Carrier Check Lookup',
-                'url' => '/logistics/carrier-check.php'
-            ],
-            'mnuPrintBrokerConf' => [
-                'label' => 'Reprint Broker Confirmation',
-                'url' => '/logistics/reprint-confirmation.php'
-            ],
-            'settlements' => [
-                'label' => 'Process Settlements',
-                'items' => [
-                    'mnuLogTrial' => [
-                        'label' => 'Run Trial Settlements',
-                        'url' => '/logistics/settlements/trial.php'
-                    ],
-                    'mnuLogPreview' => [
-                        'label' => 'Preview Settlements',
-                        'url' => '/logistics/settlements/preview.php'
-                    ],
-                    'mnuLogFinal' => [
-                        'label' => 'Finalize Settlements',
-                        'url' => '/logistics/settlements/finalize.php'
-                    ],
-                    'mnuLogPrint' => [
-                        'label' => 'Print Settlements',
-                        'url' => '/logistics/settlements/print.php'
-                    ],
-                    'separator17' => ['separator' => true],
-                    'mnuReassignCarrierLoad' => [
-                        'label' => 'Re-Assign Carrier Load',
-                        'url' => '/logistics/settlements/reassign.php'
-                    ]
-                ]
-            ]
-        ]
-    ],
-    
-    'mobile' => [
+return array (
+  'accounting' => 
+  array (
+    'label' => 'Accounting',
+    'icon' => 'bi-calculator',
+    'items' => 
+    array (
+      'gl' => 
+      array (
+        'label' => 'G/L',
+        'icon' => 'bi-journal-text',
+        'items' => 
+        array (
+          'mnuCOAMaint' => 
+          array (
+            'label' => 'Chart of Account Maintenance',
+          ),
+          'mnuGLAccoutHistory' => 
+          array (
+            'label' => 'Account History',
+          ),
+          'mnuTransactionSearch' => 
+          array (
+            'label' => 'Transaction Search',
+          ),
+          'separator1' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuJE' => 
+          array (
+            'label' => 'Journal Entry',
+          ),
+          'mnuBankRec' => 
+          array (
+            'label' => 'Bank Reconciliation',
+          ),
+          'separator2' => 
+          array (
+            'separator' => true,
+          ),
+          'reports' => 
+          array (
+            'label' => 'Reports',
+            'icon' => 'bi-file-earmark-text',
+            'items' => 
+            array (
+              'mnuChartofAccounts' => 
+              array (
+                'label' => 'Chart of Accounts',
+              ),
+              'separator3' => 
+              array (
+                'separator' => true,
+              ),
+              'mnuBalanceSheet' => 
+              array (
+                'label' => 'Balance Sheet',
+              ),
+              'mnuIncomeStatement' => 
+              array (
+                'label' => 'Income Statement',
+              ),
+              'mnuTrialBalance' => 
+              array (
+                'label' => 'Trial Balance',
+              ),
+              'mnuDailyBalance' => 
+              array (
+                'label' => 'Daily Balance Summary',
+              ),
+              'mnuFinStmt' => 
+              array (
+                'label' => 'All Financial Statements',
+              ),
+              'separator4' => 
+              array (
+                'separator' => true,
+              ),
+              'mnuGeneralLedger' => 
+              array (
+                'label' => 'General Ledger',
+              ),
+              'mnuTransactionJournal' => 
+              array (
+                'label' => 'Transaction Journal',
+              ),
+              'mnuOOAR' => 
+              array (
+                'label' => 'Owner Operator Accounts Receivable',
+              ),
+              'mnuAPJournal' => 
+              array (
+                'label' => 'AP Journal',
+              ),
+            ),
+          ),
+          'separator5' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuGLExport' => 
+          array (
+            'label' => 'GL Export',
+          ),
+        ),
+      ),
+      'ap' => 
+      array (
+        'label' => 'A/P',
+        'icon' => 'bi-credit-card',
+        'items' => 
+        array (
+          'mnuVendorMaint' => 
+          array (
+            'label' => 'Vendor Maintenance',
+          ),
+          'mnuVendorHist' => 
+          array (
+            'label' => 'Vendor History',
+          ),
+          'mnuInvoiceSearch' => 
+          array (
+            'label' => 'Invoice Search',
+          ),
+          'mnuVoucher' => 
+          array (
+            'label' => 'Voucher Entry',
+          ),
+          'mnuAPInvoiceApproval' => 
+          array (
+            'label' => 'Invoice Approval',
+          ),
+          'mnuPayables' => 
+          array (
+            'label' => 'Process Checks',
+          ),
+          'mnuProcessICCheck' => 
+          array (
+            'label' => 'Process Inter-Company Checks',
+          ),
+        ),
+      ),
+      'ar' => 
+      array (
+        'label' => 'A/R',
+        'icon' => 'bi-receipt',
+        'items' => 
+        array (
+          'mnuCollections' => 
+          array (
+            'label' => 'Collections Work',
+          ),
+          'mnuReapplyPmt' => 
+          array (
+            'label' => 'Reapply Payments',
+          ),
+          'mnuARDeposit' => 
+          array (
+            'label' => 'Deposit Entry',
+          ),
+          'mnuDepositLookup' => 
+          array (
+            'label' => 'Deposit Lookup',
+          ),
+          'mnuLoadLookup' => 
+          array (
+            'label' => 'Load Lookup',
+          ),
+          'mnuBillingEntry' => 
+          array (
+            'label' => 'Billing Entry',
+          ),
+          'mnuCustMaint' => 
+          array (
+            'label' => 'Customer Maintenance',
+          ),
+          'mnuloadreg' => 
+          array (
+            'label' => 'Loads Billed Register',
+          ),
+          'separator10' => 
+          array (
+            'separator' => true,
+          ),
+          'ar_reports' => 
+          array (
+            'label' => 'Reports',
+            'items' => 
+            array (
+              'mnuUnbilledLoads' => 
+              array (
+                'label' => 'Unbilled Loads',
+              ),
+              'mnuUnbilledWithPaperwork' => 
+              array (
+                'label' => 'Unbilled Loads with Paperwork',
+              ),
+            ),
+          ),
+          'separator11' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuPrintBatch' => 
+          array (
+            'label' => 'Print Batch of Invoices',
+          ),
+        ),
+      ),
+      'pr' => 
+      array (
+        'label' => 'P/R',
+        'icon' => 'bi-people',
+        'items' => 
+        array (
+          'mnuDriverPRMaint' => 
+          array (
+            'label' => 'Driver Payroll Maintenance',
+          ),
+          'mnuTrialDriverPR' => 
+          array (
+            'label' => 'Run Trial Driver PR',
+          ),
+          'mnuPreviewDriverPR' => 
+          array (
+            'label' => 'Preview Driver PR',
+          ),
+          'mnuFinalizeDriverPR' => 
+          array (
+            'label' => 'Finalize Driver PR',
+          ),
+        ),
+      ),
+    ),
+  ),
+  'dispatch' => 
+  array (
+    'label' => 'Dispatch',
+    'icon' => 'bi-truck',
+    'items' => 
+    array (
+      'mnuEDILoads' => 
+      array (
+        'label' => 'Available EDI Loads',
+      ),
+      'mnuLoadEntry' => 
+      array (
+        'label' => 'Load Entry',
+      ),
+      'mnuAvailLoads' => 
+      array (
+        'label' => 'Loads Available for Dispatch',
+      ),
+      'mnuLoadInq' => 
+      array (
+        'label' => 'Load Inquiry',
+      ),
+      'mnuCreditCheck' => 
+      array (
+        'label' => 'Customer Credit Check',
+      ),
+      'mnuExceptionStatusList' => 
+      array (
+        'label' => 'Exception Status List',
+      ),
+      'mnuLookupLoads' => 
+      array (
+        'label' => 'Lookup Loads by Location',
+      ),
+      'mnuDailyCount' => 
+      array (
+        'label' => 'Daily Count',
+      ),
+      'mnuUnitHistory' => 
+      array (
+        'label' => 'Unit History',
+      ),
+      'mnuUnitLastDel' => 
+      array (
+        'label' => 'Unit Last Delivery',
+      ),
+      'mnuAgentHistory' => 
+      array (
+        'label' => 'Agent History',
+      ),
+      'mnuLocationMaint' => 
+      array (
+        'label' => 'Location Maintenance',
+      ),
+      'mnuTrailerPool' => 
+      array (
+        'label' => 'Trailer Pool Maintenance',
+      ),
+      'mnuLoadTrailerStatus' => 
+      array (
+        'label' => 'Load Trailer Status',
+      ),
+      'mnuEFSLoadCash' => 
+      array (
+        'label' => 'EFS Load Cash',
+      ),
+      'mobile' => 
+      array (
         'label' => 'Mobile',
-        'icon' => 'bi-phone',
-        'items' => [
-            'mnuMobileSendMessage' => [
-                'label' => 'Send Mobile Message',
-                'url' => '/mobile/send-message.php'
-            ],
-            'separator18' => ['separator' => true],
-            'mnuMobileMessages' => [
-                'label' => 'Message Status',
-                'url' => '/mobile/message-status.php'
-            ],
-            'mnuPosRptHist' => [
-                'label' => 'Position Report History',
-                'url' => '/mobile/position-history.php'
-            ],
-            'mnuMessageSearch' => [
-                'label' => 'Message Search',
-                'url' => '/mobile/message-search.php'
-            ]
-        ]
-    ],
-    
-    'imaging' => [
-        'label' => 'Imaging',
-        'icon' => 'bi-images',
-        'items' => [
-            'mnuImageAudit' => [
-                'label' => 'Image Audit',
-                'url' => '/imaging/audit.php'
-            ],
-            'mnuImageExceptions' => [
-                'label' => 'Image Exceptions',
-                'url' => '/imaging/exceptions.php'
-            ]
-        ]
-    ],
-    
-    'reports' => [
-        'label' => 'Reports',
-        'icon' => 'bi-file-earmark-bar-graph',
-        'items' => [
-            'mnuPrintJobs' => [
-                'label' => 'Print Jobs',
-                'url' => '/reports/print-jobs.php'
-            ],
-            'separator19' => ['separator' => true],
-            'submit_reports' => [
-                'label' => 'Submit Reports',
-                'items' => [
-                    'mnuDriverMiles' => [
-                        'label' => 'Driver Miles',
-                        'url' => '/reports/submit/driver-miles.php'
-                    ],
-                    'mnuSubmitReportUnitMiles' => [
-                        'label' => 'Unit Miles',
-                        'url' => '/reports/submit/unit-miles.php'
-                    ]
-                ]
-            ],
-            'mnuSubmitReport' => [
-                'label' => 'Submit Report Job',
-                'url' => '/reports/submit-job.php'
-            ],
-            'mnuAgingReport' => [
-                'label' => 'Aging Report',
-                'url' => '/reports/aging.php'
-            ],
-            'mnuCBAgingReport' => [
-                'label' => 'C/B Aging Report',
-                'url' => '/reports/cb-aging.php'
-            ],
-            'mnuCustRevSum' => [
-                'label' => 'Customer Revenue Summary',
-                'url' => '/reports/customer-revenue.php'
-            ],
-            'mnuUnitRev' => [
-                'label' => 'Unit Revenue Summary',
-                'url' => '/reports/unit-revenue.php'
-            ],
-            'mnuUnitStateReport' => [
-                'label' => 'Unit State Mileage Summary',
-                'url' => '/reports/unit-state-mileage.php'
-            ],
-            'mnuReloadReport' => [
-                'label' => 'Reload Report',
-                'url' => '/reports/reload.php'
-            ],
-            'mnuTrafficLanes' => [
-                'label' => 'Traffic Lanes',
-                'url' => '/reports/traffic-lanes.php'
-            ],
-            'separator20' => ['separator' => true],
-            'mnuPosMap' => [
-                'label' => 'Unit/Load Positions',
-                'url' => '/reports/positions.php'
-            ],
-            'mnuOwnerLabels' => [
-                'label' => 'Owner/Driver Labels',
-                'url' => '/reports/owner-labels.php'
-            ],
-            'mnuTeamDriverList' => [
-                'label' => 'Team Driver List (Excel)',
-                'url' => '/reports/team-drivers.php'
-            ],
-            'mnuActiveDriverList' => [
-                'label' => 'Active Driver Address Listing',
-                'url' => '/reports/active-drivers.php'
-            ],
-            'mnuActiveCarrierList' => [
-                'label' => 'Active Carrier Address Listing',
-                'url' => '/reports/active-carriers.php'
-            ],
-            'mnuTractorList' => [
-                'label' => 'Tractor Listing',
-                'url' => '/reports/tractors.php'
-            ],
-            'mnuTrailerList' => [
-                'label' => 'Trailer Listing',
-                'url' => '/reports/trailers.php'
-            ],
-            'mnuDriverInsRpt' => [
-                'label' => 'Driver Insurance Report',
-                'url' => '/reports/driver-insurance.php'
-            ],
-            'separator21' => ['separator' => true],
-            'mnuRecap' => [
-                'label' => 'Weekly Recap',
-                'url' => '/reports/weekly-recap.php'
-            ],
-            'mnuPrint1099' => [
-                'label' => 'Print 1099',
-                'url' => '/reports/print-1099.php'
-            ],
-            'mnuSMDRReport' => [
-                'label' => 'SMDR Report',
-                'url' => '/reports/smdr.php'
-            ]
-        ]
-    ],
-    
-    'safety' => [
-        'label' => 'Safety',
-        'icon' => 'bi-shield-check',
-        'items' => [
-            'mnuAgentMaint' => [
-                'label' => 'Agent Maintenance',
-                'url' => '/safety/agent-maintenance.php'
-            ],
-            'mnuDriverMaint' => [
-                'label' => 'Driver Maintenance',
-                'url' => '/safety/driver-maintenance.php'
-            ],
-            'mnuOwnerMaint' => [
-                'label' => 'Owner Maintenance',
-                'url' => '/safety/owner-maintenance.php'
-            ],
-            'mnuUnitMaint' => [
-                'label' => 'Unit Maintenance',
-                'url' => '/safety/unit-maintenance.php'
-            ],
-            'mnuTractorTrailer' => [
-                'label' => 'Tractor/Trailer Lookup',
-                'url' => '/safety/tractor-trailer-lookup.php'
-            ],
-            'mnuDriverPictures' => [
-                'label' => 'Load Driver Pictures',
-                'url' => '/safety/driver-pictures.php'
-            ],
-            'separator22' => ['separator' => true],
-            'mnuPayrollMaint' => [
-                'label' => 'Payroll Maintenance',
-                'url' => '/safety/payroll-maintenance.php'
-            ],
-            'mnuUnitCheck' => [
-                'label' => 'Unit Check Lookup',
-                'url' => '/safety/unit-check-lookup.php'
-            ],
-            'mnuAgentCheck' => [
-                'label' => 'Agent Check Lookup',
-                'url' => '/safety/agent-check-lookup.php'
-            ],
-            'mnuFuel' => [
-                'label' => 'Fuel Receipts',
-                'url' => '/safety/fuel-receipts.php'
-            ],
-            'separator23' => ['separator' => true],
-            'mnuEFSMoneyCode' => [
-                'label' => 'Issue EFS Money Code (Paper Check)',
-                'url' => '/safety/efs-money-code.php'
-            ],
-            'efs_maintenance' => [
-                'label' => 'EFS Maintenance',
-                'items' => [
-                    'mnuEFSPolicyMaintenance' => [
-                        'label' => 'EFS Policy Maintenance',
-                        'url' => '/safety/efs/policy-maintenance.php'
-                    ],
-                    'mnuEFSCardMaintenance' => [
-                        'label' => 'EFS Card Maintenance',
-                        'url' => '/safety/efs/card-maintenance.php'
-                    ]
-                ]
-            ],
-            'separator24' => ['separator' => true],
-            'owner_settlements' => [
-                'label' => 'Process Owner Settlements',
-                'items' => [
-                    'mnuCreateRepeating' => [
-                        'label' => 'Create Repeating Deductions',
-                        'url' => '/safety/settlements/repeating-deductions.php'
-                    ],
-                    'mnuTrialOwnerPR' => [
-                        'label' => 'Run Trial Settlements',
-                        'url' => '/safety/settlements/trial.php'
-                    ],
-                    'mnuPreviewOwnerPR' => [
-                        'label' => 'Preview Settlements',
-                        'url' => '/safety/settlements/preview.php'
-                    ],
-                    'mnuFinalizeOwnerPR' => [
-                        'label' => 'Finalize Settlements',
-                        'url' => '/safety/settlements/finalize.php'
-                    ],
-                    'mnuPrintOwnerPR' => [
-                        'label' => 'Print Checks',
-                        'url' => '/safety/settlements/print-checks.php'
-                    ],
-                    'mnuPrintOwnerDD' => [
-                        'label' => 'Print Direct Deposits',
-                        'url' => '/safety/settlements/print-deposits.php'
-                    ]
-                ]
-            ]
-        ]
-    ],
-    
-    'utilities' => [
-        'label' => 'Utilities',
-        'icon' => 'bi-tools',
-        'items' => [
-            'mnuUserMaint' => [
-                'label' => 'User Maintenance',
-                'url' => '/utilities/user-maintenance.php'
-            ],
-            'mnuBackupRestore' => [
-                'label' => 'Backup/Restore',
-                'url' => '/utilities/backup-restore.php'
-            ],
-            'mnuPreferences' => [
-                'label' => 'System Preferences',
-                'url' => '/utilities/preferences.php'
-            ]
-        ]
-    ]
-];
+        'items' => 
+        array (
+          'mnuMobileSendMessage' => 
+          array (
+            'label' => 'Send Mobile Message',
+          ),
+          'mnuMobileMessages' => 
+          array (
+            'label' => 'Message Status',
+          ),
+          'mnuPosRptHist' => 
+          array (
+            'label' => 'Position Report History',
+          ),
+          'mnuMessageSearch' => 
+          array (
+            'label' => 'Message Search',
+          ),
+        ),
+      ),
+    ),
+  ),
+  'logistics' => 
+  array (
+    'label' => 'Logistics',
+    'icon' => 'bi-diagram-3',
+    'items' => 
+    array (
+      'mnuAvailEDI' => 
+      array (
+        'label' => 'Available EDI Loads',
+      ),
+      'mnuLoadEntryLog' => 
+      array (
+        'label' => 'Load Entry',
+      ),
+      'mnuAvailTrucks' => 
+      array (
+        'label' => 'Available Trucks/Loads',
+      ),
+      'mnuLoadInqLog' => 
+      array (
+        'label' => 'Load Inquiry',
+      ),
+      'mnuCreditCheckLog' => 
+      array (
+        'label' => 'Customer Credit Check',
+      ),
+      'mnuLookupLoadsLog' => 
+      array (
+        'label' => 'Lookup Loads by Location',
+      ),
+      'mnuBrokerTracking' => 
+      array (
+        'label' => 'Broker Tracking',
+      ),
+      'mnuCarrierMaint' => 
+      array (
+        'label' => 'Carrier Maintenance',
+      ),
+      'mnuCarrierHistory' => 
+      array (
+        'label' => 'Carrier History',
+      ),
+      'mnuPrintBrokerConf' => 
+      array (
+        'label' => 'Reprint Broker Confirmation',
+      ),
+    ),
+  ),
+  'imaging' => 
+  array (
+    'label' => 'Imaging',
+    'icon' => 'bi-images',
+    'items' => 
+    array (
+      'mnuImageAudit' => 
+      array (
+        'label' => 'Image Audit',
+      ),
+      'mnuImageExceptions' => 
+      array (
+        'label' => 'Image Exceptions',
+      ),
+    ),
+  ),
+  'reports' => 
+  array (
+    'label' => 'Reports',
+    'icon' => 'bi-file-earmark-bar-graph',
+    'items' => 
+    array (
+      'mnuPrintJobs' => 
+      array (
+        'label' => 'Print Jobs',
+      ),
+      'submit_reports' => 
+      array (
+        'label' => 'Submit Reports',
+        'items' => 
+        array (
+          'mnuDriverMiles' => 
+          array (
+            'label' => 'Driver Miles',
+          ),
+          'mnuSubmitReportUnitMiles' => 
+          array (
+            'label' => 'Unit Miles',
+          ),
+        ),
+      ),
+      'mnuSubmitReport' => 
+      array (
+        'label' => 'Submit Report Job',
+      ),
+      'mnuAgingReport' => 
+      array (
+        'label' => 'Aging Report',
+      ),
+      'mnuCBAgingReport' => 
+      array (
+        'label' => 'C/B Aging Report',
+      ),
+      'mnuCustRevSum' => 
+      array (
+        'label' => 'Customer Revenue Summary',
+      ),
+      'mnuUnitRev' => 
+      array (
+        'label' => 'Unit Revenue Summary',
+      ),
+      'mnuUnitStateReport' => 
+      array (
+        'label' => 'Unit State Mileage Summary',
+      ),
+      'mnuReloadReport' => 
+      array (
+        'label' => 'Reload Report',
+      ),
+      'mnuTrafficLanes' => 
+      array (
+        'label' => 'Traffic Lanes',
+      ),
+      'mnuPosMap' => 
+      array (
+        'label' => 'Unit/Load Positions',
+      ),
+      'mnuOwnerLabels' => 
+      array (
+        'label' => 'Owner/Driver Labels',
+      ),
+      'mnuTeamDriverList' => 
+      array (
+        'label' => 'Team Driver List (Excel)',
+      ),
+      'mnuActiveDriverList' => 
+      array (
+        'label' => 'Active Driver Address Listing',
+      ),
+      'mnuActiveCarrierList' => 
+      array (
+        'label' => 'Active Carrier Address Listing',
+      ),
+      'mnuTractorList' => 
+      array (
+        'label' => 'Tractor Listing',
+      ),
+      'mnuTrailerList' => 
+      array (
+        'label' => 'Trailer Listing',
+      ),
+      'mnuDriverInsRpt' => 
+      array (
+        'label' => 'Driver Insurance Report',
+      ),
+      'mnuRecap' => 
+      array (
+        'label' => 'Weekly Recap',
+      ),
+      'mnuPrint1099' => 
+      array (
+        'label' => 'Print 1099',
+      ),
+      'mnuSMDRReport' => 
+      array (
+        'label' => 'SMDR Report',
+      ),
+    ),
+  ),
+  'safety' => 
+  array (
+    'label' => 'Safety',
+    'icon' => 'bi-shield-check',
+    'items' => 
+    array (
+      'mnuAgentMaint' => 
+      array (
+        'label' => 'Agent Maintenance',
+      ),
+      'mnuDriverMaint' => 
+      array (
+        'label' => 'Driver Maintenance',
+      ),
+      'mnuOwnerMaint' => 
+      array (
+        'label' => 'Owner Maintenance',
+      ),
+      'mnuUnitMaint' => 
+      array (
+        'label' => 'Unit Maintenance',
+      ),
+      'mnuTractorTrailer' => 
+      array (
+        'label' => 'Tractor/Trailer Lookup',
+      ),
+      'mnuDriverPictures' => 
+      array (
+        'label' => 'Load Driver Pictures',
+      ),
+      'mnuFuel' => 
+      array (
+        'label' => 'Fuel Receipts',
+      ),
+      'mnuEFSMoneyCode' => 
+      array (
+        'label' => 'Issue EFS Money Code (Paper Check)',
+      ),
+      'efs_maintenance' => 
+      array (
+        'label' => 'EFS Maintenance',
+        'items' => 
+        array (
+          'mnuEFSPolicyMaintenance' => 
+          array (
+            'label' => 'EFS Policy Maintenance',
+          ),
+          'mnuEFSCardMaintenance' => 
+          array (
+            'label' => 'EFS Card Maintenance',
+          ),
+        ),
+      ),
+    ),
+  ),
+  'payroll' => 
+  array (
+    'label' => 'Payroll',
+    'icon' => 'bi-clock',
+    'items' => 
+    array (
+      'mnuTimeClockInOut' => 
+      array (
+        'label' => 'Clock In/Out',
+      ),
+      'separator_payroll1' => 
+      array (
+        'separator' => true,
+      ),
+      'owner_settlements' => 
+      array (
+        'label' => 'Unit Settlements',
+        'items' => 
+        array (
+          'mnuPayrollMaint' => 
+          array (
+            'label' => 'Payroll Maintenance',
+          ),
+          'mnuUnitCheck' => 
+          array (
+            'label' => 'Unit Check Lookup',
+          ),
+          'separator_owner1' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuCreateRepeating' => 
+          array (
+            'label' => 'Create Repeating Deductions',
+          ),
+          'mnuTrialOwnerPR' => 
+          array (
+            'label' => 'Run Trial Settlements',
+          ),
+          'mnuPreviewOwnerPR' => 
+          array (
+            'label' => 'Preview Settlements',
+          ),
+          'mnuFinalizeOwnerPR' => 
+          array (
+            'label' => 'Finalize Settlements',
+          ),
+          'mnuPrintOwnerPR' => 
+          array (
+            'label' => 'Print Checks',
+          ),
+          'mnuPrintOwnerDD' => 
+          array (
+            'label' => 'Print Direct Deposits',
+          ),
+        ),
+      ),
+      'agent_settlements' => 
+      array (
+        'label' => 'Agent Settlements',
+        'items' => 
+        array (
+          'mnuAgentCheck' => 
+          array (
+            'label' => 'Agent Check Lookup',
+          ),
+          'separator_agent1' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuTrialAgentPR' => 
+          array (
+            'label' => 'Run Trial Settlements',
+          ),
+          'mnuPreviewAgentPR' => 
+          array (
+            'label' => 'Preview Settlements',
+          ),
+          'mnuFinalizeAgentPR' => 
+          array (
+            'label' => 'Finalize Settlements',
+          ),
+          'mnuPrintAgentPR' => 
+          array (
+            'label' => 'Print Settlements',
+          ),
+        ),
+      ),
+      'carrier_settlements' => 
+      array (
+        'label' => 'Carrier Settlements',
+        'items' => 
+        array (
+          'mnuCarrierCheck' => 
+          array (
+            'label' => 'Carrier Check Lookup',
+          ),
+          'separator_carrier2' => 
+          array (
+            'separator' => true,
+          ),
+          'mnuLogTrial' => 
+          array (
+            'label' => 'Run Trial Settlements',
+          ),
+          'mnuLogPreview' => 
+          array (
+            'label' => 'Preview Settlements',
+          ),
+          'mnuLogFinal' => 
+          array (
+            'label' => 'Finalize Settlements',
+          ),
+          'mnuLogPrint' => 
+          array (
+            'label' => 'Print Settlements',
+          ),
+          'mnuReassignCarrierLoad' => 
+          array (
+            'label' => 'Re-Assign Carrier Load',
+          ),
+        ),
+      ),
+    ),
+  ),
+  'system' => 
+  array (
+    'label' => 'Systems',
+    'icon' => 'bi-gear',
+    'items' => 
+    array (
+      'mnuProjectLog' => 
+      array (
+        'label' => 'Support Request',
+      ),
+      'mnuTLSBilling' => 
+      array (
+        'label' => 'TL Systems Billing',
+      ),
+      'mnuUserSecurity' => 
+      array (
+        'label' => 'User Security',
+      ),
+      'mnuEDIUserProfile' => 
+      array (
+        'label' => 'EDI User Profile',
+      ),
+      'development' => 
+      array (
+        'label' => 'Development',
+        'items' => 
+        array (
+          'devTrailerTypeColor' => 
+          array (
+            'label' => 'Trailer Type Colors',
+          ),
+          'devExportMenu' => 
+          array (
+            'label' => 'Export Menu',
+          ),
+        ),
+      ),
+    ),
+  ),
+);

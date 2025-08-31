@@ -43,12 +43,15 @@ class MenuManager
             return '';
         }
 
-        $html = '<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">';
+        // Add CSS link if not already included
+        $cssLink = '<link href="/tls/css/app.css" rel="stylesheet">' . "\n";
+        
+        $html = $cssLink . '<nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top mb-4">';
         $html .= '<div class="container-fluid">';
         
         // Brand
         $user = $this->auth->getCurrentUser();
-        $html .= '<a class="navbar-brand" href="/dashboard.php">';
+        $html .= '<a class="navbar-brand" href="/tls/dashboard.php">';
         $html .= '<i class="bi bi-truck me-2"></i>' . htmlspecialchars(Config::get('APP_NAME', 'TLS Operations'));
         $html .= '</a>';
         
@@ -73,13 +76,13 @@ class MenuManager
         $html .= '<div class="navbar-nav">';
         $html .= '<div class="nav-item dropdown">';
         $html .= '<a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">';
-        $html .= '<i class="bi bi-person-circle me-2"></i>' . htmlspecialchars($user['user_id']);
+        $html .= '<i class="bi bi-person-circle me-2"></i>' . htmlspecialchars($user['user_name']);
         $html .= '</a>';
         $html .= '<ul class="dropdown-menu dropdown-menu-end">';
-        $html .= '<li><h6 class="dropdown-header">Database: ' . htmlspecialchars($user['customer_db']) . '</h6></li>';
+        $html .= '<li><h6 class="dropdown-header">Customer ID: ' . htmlspecialchars($user['customer_db']) . '</h6></li>';
         $html .= '<li><hr class="dropdown-divider"></li>';
-        $html .= '<li><a class="dropdown-item" href="/profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>';
-        $html .= '<li><a class="dropdown-item" href="/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>';
+        $html .= '<li><a class="dropdown-item" href="/tls/under-development.php?menu=Profile"><i class="bi bi-person me-2"></i>Profile</a></li>';
+        $html .= '<li><a class="dropdown-item" href="/tls/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>';
         $html .= '</ul>';
         $html .= '</div>';
         $html .= '</div>';
@@ -108,7 +111,7 @@ class MenuManager
         
         // Dashboard link
         $html .= '<li class="nav-item">';
-        $html .= '<a class="nav-link text-dark" href="/dashboard.php">';
+        $html .= '<a class="nav-link text-dark" href="/tls/dashboard.php">';
         $html .= '<i class="bi bi-house-door me-2"></i>Dashboard';
         $html .= '</a>';
         $html .= '</li>';
@@ -152,7 +155,7 @@ class MenuManager
             $html .= '<a class="nav-link dropdown-toggle text-light" href="#" role="button" data-bs-toggle="dropdown">';
             $html .= $icon . htmlspecialchars($menuData['label']);
             $html .= '</a>';
-            $html .= '<ul class="dropdown-menu">';
+            $html .= '<ul class="dropdown-menu dropdown-menu-scrollable">';
             
             foreach ($menuData['items'] as $subKey => $subData) {
                 if ($this->hasMenuAccess($subKey)) {
@@ -164,7 +167,7 @@ class MenuManager
             $html .= '</li>';
         } else {
             // Simple link
-            $url = $menuData['url'] ?? '/under-development.php?menu=' . urlencode($menuKey);
+            $url = $menuData['url'] ?? '/tls/under-development.php?menu=' . urlencode($menuData['label']);
             $html .= '<li class="nav-item">';
             $html .= '<a class="nav-link text-light" href="' . htmlspecialchars($url) . '">';
             $html .= $icon . htmlspecialchars($menuData['label']);
@@ -191,12 +194,11 @@ class MenuManager
         $hasChildren = isset($menuData['items']) && !empty($menuData['items']);
         
         if ($hasChildren) {
-            // Nested dropdown
-            $html = '<li class="dropdown-submenu">';
-            $html .= '<a class="dropdown-item dropdown-toggle" href="#">';
-            $html .= htmlspecialchars($menuData['label']);
-            $html .= '</a>';
-            $html .= '<ul class="dropdown-menu">';
+            // For Bootstrap 5, flatten nested menus with headers and separators
+            $html = '';
+            
+            // Add section header
+            $html .= '<li><h6 class="dropdown-header">' . htmlspecialchars($menuData['label']) . '</h6></li>';
             
             foreach ($menuData['items'] as $subKey => $subData) {
                 if ($this->hasMenuAccess($subKey)) {
@@ -204,11 +206,12 @@ class MenuManager
                 }
             }
             
-            $html .= '</ul>';
-            $html .= '</li>';
+            // Add separator after section (except for last item)
+            $html .= '<li><hr class="dropdown-divider"></li>';
+            
         } else {
             // Simple dropdown link
-            $url = $menuData['url'] ?? '/under-development.php?menu=' . urlencode($menuKey);
+            $url = $menuData['url'] ?? '/tls/under-development.php?menu=' . urlencode($menuData['label']);
             $html = '<li>';
             $html .= '<a class="dropdown-item" href="' . htmlspecialchars($url) . '">';
             $html .= htmlspecialchars($menuData['label']);
@@ -263,7 +266,7 @@ class MenuManager
             $html .= '</li>';
         } else {
             // Simple link
-            $url = $menuData['url'] ?? '/under-development.php?menu=' . urlencode($menuKey);
+            $url = $menuData['url'] ?? '/tls/under-development.php?menu=' . urlencode($menuData['label']);
             $html .= '<li class="nav-item">';
             $html .= '<a class="nav-link text-dark" href="' . htmlspecialchars($url) . '">';
             $html .= $indent . $icon . htmlspecialchars($menuData['label']);
@@ -287,11 +290,88 @@ class MenuManager
             return false;
         }
         
-        // For now, allow access to all non-security menus
-        // This will be enhanced to check against spUser_Menu stored procedure results
-        return in_array($menuKey, $this->userMenus) || 
-               $this->isPublicMenu($menuKey) ||
-               $this->auth->hasMenuAccess($menuKey);
+        // Check if this is a public menu (always accessible)
+        if ($this->isPublicMenu($menuKey)) {
+            return true;
+        }
+        
+        // Check if user has direct access to this menu item
+        if (in_array($menuKey, $this->userMenus)) {
+            return true;
+        }
+        
+        // For categories (items with sub-menus), check if user has access to any child items
+        // This handles both top-level categories and nested categories
+        $menuData = null;
+        
+        // First, try to find the menu in the top-level config
+        if (isset($this->menuConfig[$menuKey])) {
+            $menuData = $this->menuConfig[$menuKey];
+        } else {
+            // If not found at top-level, search recursively through all menu items
+            $menuData = $this->findMenuInConfig($menuKey, $this->menuConfig);
+        }
+        
+        if ($menuData && isset($menuData['items'])) {
+            return $this->hasAccessToAnyChildMenu($menuData['items']);
+        }
+        
+        return false;
+    }
+    
+    /**
+     * Find menu data by key in the menu configuration recursively
+     * 
+     * @param string $menuKey Menu key to find
+     * @param array $menuConfig Menu configuration to search
+     * @return array|null Menu data if found, null otherwise
+     */
+    private function findMenuInConfig(string $menuKey, array $menuConfig): ?array
+    {
+        foreach ($menuConfig as $key => $data) {
+            if ($key === $menuKey) {
+                return $data;
+            }
+            
+            if (isset($data['items'])) {
+                $result = $this->findMenuInConfig($menuKey, $data['items']);
+                if ($result !== null) {
+                    return $result;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Check if user has access to any child menu items recursively
+     * 
+     * @param array $menuItems Menu items to check
+     * @return bool True if user has access to any child item
+     */
+    private function hasAccessToAnyChildMenu(array $menuItems): bool
+    {
+        foreach ($menuItems as $childKey => $childData) {
+            // Skip separators
+            if (isset($childData['separator'])) {
+                continue;
+            }
+            
+            // Check if user has access to this specific menu item
+            if (in_array($childKey, $this->userMenus)) {
+                return true;
+            }
+            
+            // If this child has sub-items, check recursively
+            if (isset($childData['items'])) {
+                if ($this->hasAccessToAnyChildMenu($childData['items'])) {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     /**
@@ -302,7 +382,7 @@ class MenuManager
      */
     private function isPublicMenu(string $menuKey): bool
     {
-        $publicMenus = ['file', 'mnuExit'];
+        $publicMenus = [];
         return in_array($menuKey, $publicMenus);
     }
 
@@ -322,7 +402,7 @@ class MenuManager
         
         $html = '<nav aria-label="breadcrumb">';
         $html .= '<ol class="breadcrumb">';
-        $html .= '<li class="breadcrumb-item"><a href="/dashboard.php">Dashboard</a></li>';
+        $html .= '<li class="breadcrumb-item"><a href="/tls/dashboard.php">Dashboard</a></li>';
         
         foreach ($breadcrumbs as $index => $crumb) {
             if ($index === count($breadcrumbs) - 1) {
