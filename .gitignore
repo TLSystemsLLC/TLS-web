@@ -1,0 +1,32 @@
+# Environment configuration
+config/.env
+
+# Logs
+logs/*.log
+*.log
+
+# Temporary files
+tmp/
+temp/
+
+# Cache
+cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PHP files
+composer.phar
+
+# Security
+*.key
+*.pem
+*.crt
