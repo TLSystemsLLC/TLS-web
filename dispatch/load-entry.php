@@ -36,13 +36,16 @@ $successMessage = '';
 
 if ($_POST['action'] ?? '' === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        // Handle tender saving first if manual entry
+        $tenderKey = saveTender($db, $_POST);
+        
         $params = [
             'Key' => (int)($_POST['load_key'] ?? 0),
             'OriginKey' => (int)($_POST['origin_key'] ?? 0),
             'DestinationKey' => (int)($_POST['destination_key'] ?? 0),
             'ShipmentID' => $_POST['shipment_id'] ?? '',
             'PaymentMeth' => $_POST['payment_method'] ?? 'COD',
-            'TenderKey' => (int)($_POST['tender_key'] ?? 0),
+            'TenderKey' => $tenderKey,
             'Priority' => (int)($_POST['priority'] ?? 1),
             'Height' => (int)($_POST['height'] ?? 0),
             'Width' => (int)($_POST['width'] ?? 0),
@@ -90,8 +93,24 @@ if ($_POST['action'] ?? '' === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') 
         $result = $db->executeStoredProcedure('spLoadHeader_Save', $params);
         
         if ($result === 0) {
-            $successMessage = 'Load saved successfully.';
             $loadKey = $params['Key'];
+            
+            // Handle stops data if present
+            if (!empty($_POST['stops_data'])) {
+                try {
+                    $stopsData = json_decode($_POST['stops_data'], true);
+                    if (is_array($stopsData)) {
+                        saveLoadStops($db, $loadKey, $stopsData);
+                    }
+                } catch (Exception $e) {
+                    error_log('Error saving stops data: ' . $e->getMessage());
+                    $errorMessage = 'Load saved but stops data failed to save.';
+                }
+            }
+            
+            if (empty($errorMessage)) {
+                $successMessage = 'Load saved successfully.';
+            }
         } else {
             $errorMessage = 'Failed to save load. Error code: ' . $result;
         }
@@ -99,6 +118,84 @@ if ($_POST['action'] ?? '' === 'save' && $_SERVER['REQUEST_METHOD'] === 'POST') 
         $errorMessage = 'Error saving load: ' . $e->getMessage();
         error_log('Load save error: ' . $e->getMessage());
     }
+}
+
+function saveLoadStops(Database $db, int $loadKey, array $stopsData): void
+{
+    // Use the spLoadStops_Save stored procedure which should handle the stops for a load
+    foreach ($stopsData as $stop) {
+        try {
+            // Determine if this is a QuickKey address or manual entry
+            if (!empty($stop['key'])) {
+                // Using existing QuickKey address - use spStop_Save
+                $stopParams = [
+                    'LoadKey' => $loadKey,
+                    'StopSeq' => $stop['sequence'],
+                    'ReasonCode' => trim($stop['reason']), // Trim to handle any extra spaces
+                    'NameKey' => (int)$stop['key']
+                ];
+                
+                $result = $db->executeStoredProcedure('spStop_Save', $stopParams);
+                
+            } elseif (!empty($stop['manual'])) {
+                // Manual address entry - create new NameAddress with QK qualifier first
+                $manual = $stop['manual'];
+                
+                // Create new name/address entry with QK qualifier for QuickKey addresses
+                $addressParams = [
+                    'QuickKey' => !empty($manual['quick_key']) ? strtoupper($manual['quick_key']) : '',
+                    'Name1' => $manual['company_name'],
+                    'Address1' => $manual['address1'],
+                    'Address2' => $manual['address2'] ?? '',
+                    'City' => $manual['city'],
+                    'State' => strtoupper($manual['state']),
+                    'Zip' => $manual['zip'] ?? '',
+                    'NameQual' => 'QK'  // QuickKey qualifier for new addresses
+                ];
+                
+                // Save the address first to get a NameKey
+                $nameKey = $db->executeStoredProcedure('spNameAddress_Save', $addressParams);
+                
+                if ($nameKey > 0) {
+                    // Now save the stop with the new NameKey
+                    $stopParams = [
+                        'LoadKey' => $loadKey,
+                        'StopSeq' => $stop['sequence'],
+                        'ReasonCode' => trim($stop['reason']),
+                        'NameKey' => $nameKey
+                    ];
+                    
+                    $result = $db->executeStoredProcedure('spStop_Save', $stopParams);
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Error saving stop {$stop['sequence']}: " . $e->getMessage());
+            throw $e;
+        }
+    }
+}
+
+function saveTender(Database $db, array $postData): int
+{
+    // Handle tender saving if tender information is provided
+    if (!empty($postData['tender_manual'])) {
+        $manual = $postData['tender_manual'];
+        
+        // Create or update tender
+        $tenderParams = [
+            'QuickKey' => !empty($manual['quick_key']) ? strtoupper($manual['quick_key']) : '',
+            'TenderName' => $manual['tender_name'] ?? '',
+            'City' => $manual['city'] ?? '',
+            'State' => strtoupper($manual['state'] ?? ''),
+            'Phone' => $manual['phone'] ?? ''
+        ];
+        
+        // Save the tender and return the TenderKey
+        $tenderKey = $db->executeStoredProcedure('spTender_Save', $tenderParams);
+        return $tenderKey;
+    }
+    
+    return (int)($postData['tender_key'] ?? 0);
 }
 
 if ($loadKey) {
@@ -125,6 +222,95 @@ if ($loadKey) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/tls/css/app.css">
+    <style>
+        .sortable-container {
+            min-height: 200px;
+        }
+        
+        .stop-item {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            padding: 12px;
+            transition: all 0.2s ease;
+            cursor: move;
+        }
+        
+        .stop-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+        
+        .stop-item.dragging {
+            opacity: 0.5;
+            transform: rotate(2deg);
+        }
+        
+        .stop-item.drag-over {
+            border-color: #0d6efd;
+            background-color: #e7f1ff;
+        }
+        
+        .stop-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .drag-handle {
+            margin-right: 10px;
+            color: #6c757d;
+            cursor: grab;
+            font-size: 18px;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        
+        .stop-label {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+        }
+        
+        .stop-role-badge {
+            font-size: 0.85em;
+            padding: 0.35em 0.65em;
+        }
+        
+        .stop-content {
+            padding-left: 28px; /* Align with the drag handle */
+        }
+        
+        .remove-stop {
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        
+        .stop-item:hover .remove-stop {
+            opacity: 1;
+        }
+        
+        /* Role-specific styling */
+        .stop-item[data-stop-type="origin"] {
+            border-left: 4px solid #28a745;
+        }
+        
+        .stop-item[data-stop-type="destination"] {
+            border-left: 4px solid #dc3545;
+        }
+        
+        .stop-item[data-stop-type="intermediate"] {
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+    </style>
 </head>
 <body>
     <div class="container-fluid">
@@ -166,9 +352,75 @@ if ($loadKey) {
                 <input type="hidden" name="action" value="save">
                 <input type="hidden" name="load_key" value="<?php echo $loadData['LoadKey'] ?? 0; ?>">
                 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card">
+                <!-- Independent Column Layout -->
+                <div class="d-flex flex-wrap">
+                    <!-- Left Column - Independent Cards -->
+                    <div class="flex-shrink-0" style="width: 48%; margin-right: 2%;">
+                        <!-- Tender Information - First Priority -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h5><i class="bi bi-building"></i> Tender Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-12">
+                                        <label for="tender_search" class="form-label fw-bold">Tender:</label>
+                                        <input type="text" class="form-control" id="tender_search" placeholder="Search tender companies...">
+                                        <input type="hidden" id="tender_key" name="tender_key" value="<?php echo $loadData['TenderKey'] ?? ''; ?>">
+                                        
+                                        <!-- Manual Tender Entry -->
+                                        <div class="manual-tender-entry mt-2" id="manual_tender_entry" style="display: none;">
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           id="tender_quick_key" name="tender_manual[quick_key]" 
+                                                           placeholder="Quick Key (6 characters)" maxlength="6">
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           name="tender_manual[tender_name]" 
+                                                           placeholder="Tender Company Name">
+                                                </div>
+                                                <div class="col-6">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           name="tender_manual[city]" 
+                                                           placeholder="City">
+                                                </div>
+                                                <div class="col-3">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           name="tender_manual[state]" 
+                                                           placeholder="State" maxlength="2">
+                                                </div>
+                                                <div class="col-3">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" 
+                                                            onclick="toggleManualTender(false)">
+                                                        <i class="bi bi-search"></i>
+                                                    </button>
+                                                </div>
+                                                <div class="col-12">
+                                                    <input type="text" class="form-control form-control-sm" 
+                                                           name="tender_manual[phone]" 
+                                                           placeholder="Phone Number">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="tender-info mt-1" id="tender_info" style="display: none;">
+                                            <small class="text-muted"><span id="tender_details"></span></small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-1">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleManualTender(true)">
+                                        <i class="bi bi-pencil"></i> Enter New Tender
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Customer Information -->
+                        <div class="card mb-3">
                             <div class="card-header">
                                 <h5><i class="bi bi-person-lines-fill"></i> Customer Information</h5>
                             </div>
@@ -197,43 +449,9 @@ if ($loadKey) {
                                 </div>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="bi bi-geo-alt"></i> Origin & Destination</h5>
-                            </div>
-                            <div class="card-body">
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
-                                        <label for="origin_search" class="form-label">Origin:</label>
-                                        <input type="text" class="form-control" id="origin_search" placeholder="Search origin addresses...">
-                                        <input type="hidden" id="origin_key" name="origin_key" value="<?php echo $loadData['OriginKey'] ?? ''; ?>">
-                                        <div class="origin-info mt-1" id="origin_info" style="display: none;">
-                                            <small class="text-muted"><span id="origin_address"></span></small>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="row mb-3">
-                                    <div class="col-md-12">
-                                        <label for="destination_search" class="form-label">Destination:</label>
-                                        <input type="text" class="form-control" id="destination_search" placeholder="Search destination addresses...">
-                                        <input type="hidden" id="destination_key" name="destination_key" value="<?php echo $loadData['DestinationKey'] ?? ''; ?>">
-                                        <div class="destination-info mt-1" id="destination_info" style="display: none;">
-                                            <small class="text-muted"><span id="destination_address"></span></small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <div class="card">
+                        
+                        <!-- Load Information -->
+                        <div class="card mb-3">
                             <div class="card-header">
                                 <h5><i class="bi bi-info-circle"></i> Load Information</h5>
                             </div>
@@ -331,9 +549,198 @@ if ($loadKey) {
                             </div>
                         </div>
                     </div>
+                    
+                    <!-- Right Column - Independent Cards -->
+                    <div class="flex-shrink-0" style="width: 50%;">
+                        <!-- Stops -->
+                        <div class="card mb-3">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <h5><i class="bi bi-geo-alt"></i> Stops</h5>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addStop()">
+                                        <i class="bi bi-plus"></i> Add Stop
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info alert-sm">
+                                    <i class="bi bi-info-circle"></i> <strong>Drag to reorder stops.</strong> 
+                                    First stop = Shipper (Origin), Last stop = Consignee (Destination), Middle stops = Intermediate stops.
+                                </div>
+                                
+                                <!-- Sortable Stops Container -->
+                                <div id="sortable_stops_container" class="sortable-container">
+                                    <!-- Origin (initially) -->
+                                    <div class="stop-item" data-stop-type="origin" data-stop-id="origin" draggable="true">
+                                        <div class="stop-header">
+                                            <div class="drag-handle">
+                                                <i class="bi bi-grip-vertical"></i>
+                                            </div>
+                                            <div class="stop-label">
+                                                <span class="stop-role-badge badge bg-success">Shipper (Origin)</span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-stop" onclick="removeStopItem('origin')" style="display: none;">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="stop-content">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control stop-address-search" id="origin_search" placeholder="Search shipper address...">
+                                                    <input type="hidden" id="origin_key" name="origin_key" value="<?php echo $loadData['OriginKey'] ?? ''; ?>">
+                                                    
+                                                    <!-- Manual Address Entry -->
+                                                    <div class="manual-address-entry mt-2" id="manual_address_origin" style="display: none;">
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[quick_key]" 
+                                                                       placeholder="Quick Key (6 chars)" maxlength="6">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[company_name]" 
+                                                                       placeholder="Company Name">
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[address1]" 
+                                                                       placeholder="Address Line 1">
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[address2]" 
+                                                                       placeholder="Address Line 2 (Optional)">
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[city]" 
+                                                                       placeholder="City">
+                                                            </div>
+                                                            <div class="col-3">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[state]" 
+                                                                       placeholder="State" maxlength="2">
+                                                            </div>
+                                                            <div class="col-3">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="origin_manual[zip]" 
+                                                                       placeholder="ZIP" maxlength="10">
+                                                            </div>
+                                                            <div class="col-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" 
+                                                                        onclick="toggleManualAddress('origin', false)">
+                                                                    <i class="bi bi-search"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <select class="form-select stop-reason-select" id="origin_stop_reason" name="origin_stop_reason">
+                                                        <option value="">Select reason...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="stop-info mt-1" id="origin_info" style="display: none;">
+                                                <small class="text-muted"><span id="origin_address"></span></small>
+                                            </div>
+                                            <div class="mt-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleManualAddress('origin', true)">
+                                                    <i class="bi bi-pencil"></i> Enter New Address
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                    <div class="col-md-6">
-                        <div class="card">
+                                    <!-- Destination (initially) -->
+                                    <div class="stop-item" data-stop-type="destination" data-stop-id="destination" draggable="true">
+                                        <div class="stop-header">
+                                            <div class="drag-handle">
+                                                <i class="bi bi-grip-vertical"></i>
+                                            </div>
+                                            <div class="stop-label">
+                                                <span class="stop-role-badge badge bg-danger">Consignee (Destination)</span>
+                                                <button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-stop" onclick="removeStopItem('destination')" style="display: none;">
+                                                    <i class="bi bi-x"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="stop-content">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <input type="text" class="form-control stop-address-search" id="destination_search" placeholder="Search consignee address...">
+                                                    <input type="hidden" id="destination_key" name="destination_key" value="<?php echo $loadData['DestinationKey'] ?? ''; ?>">
+                                                    
+                                                    <!-- Manual Address Entry -->
+                                                    <div class="manual-address-entry mt-2" id="manual_address_destination" style="display: none;">
+                                                        <div class="row g-2">
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[quick_key]" 
+                                                                       placeholder="Quick Key (6 chars)" maxlength="6">
+                                                            </div>
+                                                            <div class="col-6">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[company_name]" 
+                                                                       placeholder="Company Name">
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[address1]" 
+                                                                       placeholder="Address Line 1">
+                                                            </div>
+                                                            <div class="col-12">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[address2]" 
+                                                                       placeholder="Address Line 2 (Optional)">
+                                                            </div>
+                                                            <div class="col-4">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[city]" 
+                                                                       placeholder="City">
+                                                            </div>
+                                                            <div class="col-3">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[state]" 
+                                                                       placeholder="State" maxlength="2">
+                                                            </div>
+                                                            <div class="col-3">
+                                                                <input type="text" class="form-control form-control-sm" 
+                                                                       name="destination_manual[zip]" 
+                                                                       placeholder="ZIP" maxlength="10">
+                                                            </div>
+                                                            <div class="col-2">
+                                                                <button type="button" class="btn btn-sm btn-outline-secondary w-100" 
+                                                                        onclick="toggleManualAddress('destination', false)">
+                                                                    <i class="bi bi-search"></i>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <select class="form-select stop-reason-select" id="dest_stop_reason" name="dest_stop_reason">
+                                                        <option value="">Select reason...</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="stop-info mt-1" id="destination_info" style="display: none;">
+                                                <small class="text-muted"><span id="destination_address"></span></small>
+                                            </div>
+                                            <div class="mt-1">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleManualAddress('destination', true)">
+                                                    <i class="bi bi-pencil"></i> Enter New Address
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Load Details -->
+                        <div class="card mb-3">
                             <div class="card-header">
                                 <h5><i class="bi bi-geo-alt"></i> Load Details</h5>
                             </div>
@@ -425,7 +832,7 @@ if ($loadKey) {
                         </div>
                     </div>
                 </div>
-
+                
                 <!-- Advanced Sections -->
                 <div class="row mt-3">
                     <div class="col">
@@ -442,17 +849,12 @@ if ($loadKey) {
                                      aria-labelledby="headingRates" data-bs-parent="#advancedSections">
                                     <div class="accordion-body">
                                         <div class="row">
-                                            <div class="col-md-4">
-                                                <label for="tender_key" class="form-label">Tender Key:</label>
-                                                <input type="number" class="form-control" id="tender_key" name="tender_key" 
-                                                       value="<?php echo $loadData['TenderKey'] ?? ''; ?>">
-                                            </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <label for="offer" class="form-label">Offer:</label>
                                                 <input type="number" class="form-control" id="offer" name="offer" 
                                                        value="<?php echo $loadData['Offer'] ?? ''; ?>">
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <label for="home_time" class="form-label">Home Time:</label>
                                                 <input type="number" class="form-control" id="home_time" name="home_time" 
                                                        value="<?php echo $loadData['HomeTime'] ?? ''; ?>">
@@ -868,6 +1270,22 @@ if ($loadKey) {
                 null, // No hidden field needed for commodity
                 'commodities'
             );
+
+            // Initialize stop reasons for origin and destination
+            loadStopReasons('origin_stop_reason', '<?php echo $loadData['OriginStopReason'] ?? 'CL'; ?>');
+            loadStopReasons('dest_stop_reason', '<?php echo $loadData['DestStopReason'] ?? 'CU'; ?>');
+
+            // Tender autocomplete
+            new TLSAutocomplete(
+                document.getElementById('tender_search'),
+                document.getElementById('tender_key'),
+                'tenders',
+                function(tender) {
+                    document.getElementById('tender_details').textContent = 
+                        tender.tender_name + ' - ' + tender.city + ', ' + tender.state;
+                    document.getElementById('tender_info').style.display = 'block';
+                }
+            );
         });
         
         // Additional utility functions
@@ -935,6 +1353,417 @@ if ($loadKey) {
             // Display calculated freight charge (you could add a readonly field for this)
             console.log('Calculated Freight Charge: $' + freightCharge.toFixed(2));
         }
+
+        // Stops Management with Drag & Drop
+        let stopCounter = 0;
+        let draggedElement = null;
+
+        function loadStopReasons(selectId, selectedValue = '') {
+            fetch('/tls/api/lookup.php?type=stop_reasons&q=')
+                .then(response => response.json())
+                .then(data => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">Select reason...</option>';
+                    
+                    data.forEach(reason => {
+                        const option = document.createElement('option');
+                        option.value = reason.code;
+                        option.textContent = reason.code + ' - ' + reason.description;
+                        if (reason.code === selectedValue) {
+                            option.selected = true;
+                        }
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error loading stop reasons:', error);
+                });
+        }
+
+        function addStop() {
+            stopCounter++;
+            const container = document.getElementById('sortable_stops_container');
+            const destinationElement = container.querySelector('[data-stop-type="destination"]');
+            
+            const stopDiv = document.createElement('div');
+            stopDiv.className = 'stop-item';
+            stopDiv.setAttribute('data-stop-type', 'intermediate');
+            stopDiv.setAttribute('data-stop-id', `stop_${stopCounter}`);
+            stopDiv.setAttribute('draggable', 'true');
+            
+            stopDiv.innerHTML = `
+                <div class="stop-header">
+                    <div class="drag-handle">
+                        <i class="bi bi-grip-vertical"></i>
+                    </div>
+                    <div class="stop-label">
+                        <span class="stop-role-badge badge bg-warning">Intermediate Stop</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger ms-2 remove-stop" onclick="removeStopItem('stop_${stopCounter}')">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="stop-content">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <input type="text" class="form-control stop-address-search" 
+                                   id="stop_search_${stopCounter}" 
+                                   placeholder="Search intermediate stop address...">
+                            <input type="hidden" id="stop_key_${stopCounter}">
+                            
+                            <!-- Manual Address Entry -->
+                            <div class="manual-address-entry mt-2" id="manual_address_stop_${stopCounter}" style="display: none;">
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="Quick Key (6 chars)" maxlength="6">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="Company Name">
+                                    </div>
+                                    <div class="col-12">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="Address Line 1">
+                                    </div>
+                                    <div class="col-12">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="Address Line 2 (Optional)">
+                                    </div>
+                                    <div class="col-4">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="City">
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="State" maxlength="2">
+                                    </div>
+                                    <div class="col-3">
+                                        <input type="text" class="form-control form-control-sm" 
+                                               placeholder="ZIP" maxlength="10">
+                                    </div>
+                                    <div class="col-2">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary w-100" 
+                                                onclick="toggleManualAddress('stop_${stopCounter}', false)">
+                                            <i class="bi bi-search"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select stop-reason-select" 
+                                    id="stop_reason_${stopCounter}">
+                                <option value="">Select reason...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="stop-info mt-1" id="stop_info_${stopCounter}" style="display: none;">
+                        <small class="text-muted"><span id="stop_address_${stopCounter}"></span></small>
+                    </div>
+                    <div class="mt-1">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleManualAddress('stop_${stopCounter}', true)">
+                            <i class="bi bi-pencil"></i> Enter New Address
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Insert before destination
+            container.insertBefore(stopDiv, destinationElement);
+            
+            // Initialize drag events
+            initializeDragEvents(stopDiv);
+            
+            // Initialize autocomplete for the new stop
+            initializeStopAutocomplete(stopCounter);
+            
+            // Load stop reasons for the new stop
+            loadStopReasons(`stop_reason_${stopCounter}`);
+            
+            // Update all stop roles after adding
+            updateStopRoles();
+        }
+
+        function removeStopItem(stopId) {
+            const stopElement = document.querySelector(`[data-stop-id="${stopId}"]`);
+            if (stopElement) {
+                stopElement.remove();
+                updateStopRoles();
+            }
+        }
+
+        function toggleManualAddress(stopId, showManual) {
+            const searchField = document.getElementById(`${stopId.replace('stop_', '')}_search`) || 
+                               document.getElementById(`stop_search_${stopId.replace('stop_', '')}`);
+            const manualDiv = document.getElementById(`manual_address_${stopId}`);
+            const stopInfoDiv = document.getElementById(`stop_info_${stopId.replace('stop_', '')}`);
+            
+            if (showManual) {
+                // Store current search value to allow undo
+                searchField.dataset.previousValue = searchField.value;
+                
+                searchField.style.display = 'none';
+                manualDiv.style.display = 'block';
+                if (stopInfoDiv) stopInfoDiv.style.display = 'none';
+                // Clear the search field and hidden key
+                searchField.value = '';
+                const hiddenKey = document.getElementById(`${stopId.replace('stop_', '')}_key`) || 
+                                 document.getElementById(`stop_key_${stopId.replace('stop_', '')}`);
+                if (hiddenKey) hiddenKey.value = '';
+            } else {
+                searchField.style.display = 'block';
+                manualDiv.style.display = 'none';
+                // Clear manual entry fields
+                const manualInputs = manualDiv.querySelectorAll('input');
+                manualInputs.forEach(input => input.value = '');
+                
+                // Restore previous search value (undo capability)
+                if (searchField.dataset.previousValue) {
+                    searchField.value = searchField.dataset.previousValue;
+                    searchField.dispatchEvent(new Event('input')); // Trigger autocomplete
+                }
+            }
+        }
+
+        function toggleManualTender(showManual) {
+            const searchField = document.getElementById('tender_search');
+            const manualDiv = document.getElementById('manual_tender_entry');
+            const tenderInfoDiv = document.getElementById('tender_info');
+            
+            if (showManual) {
+                // Store current search value to allow undo
+                searchField.dataset.previousValue = searchField.value;
+                
+                searchField.style.display = 'none';
+                manualDiv.style.display = 'block';
+                tenderInfoDiv.style.display = 'none';
+                // Clear the search field and hidden key
+                searchField.value = '';
+                document.getElementById('tender_key').value = '';
+            } else {
+                searchField.style.display = 'block';
+                manualDiv.style.display = 'none';
+                // Clear manual entry fields
+                const manualInputs = manualDiv.querySelectorAll('input');
+                manualInputs.forEach(input => input.value = '');
+                
+                // Restore previous search value (undo capability)
+                if (searchField.dataset.previousValue) {
+                    searchField.value = searchField.dataset.previousValue;
+                    searchField.dispatchEvent(new Event('input')); // Trigger autocomplete
+                }
+            }
+        }
+
+        function initializeStopAutocomplete(stopNumber) {
+            const searchField = document.getElementById(`stop_search_${stopNumber}`);
+            const hiddenField = document.getElementById(`stop_key_${stopNumber}`);
+            
+            new TLSAutocomplete(
+                searchField,
+                hiddenField,
+                'addresses',
+                function(address) {
+                    let addressDisplay = '';
+                    if (address.addr1) addressDisplay += address.addr1;
+                    if (address.addr2) addressDisplay += (addressDisplay ? ', ' : '') + address.addr2;
+                    if (address.city || address.state || address.zip) {
+                        addressDisplay += (addressDisplay ? ', ' : '') + 
+                                        address.city + 
+                                        (address.state ? ', ' + address.state : '') + 
+                                        (address.zip ? ' ' + address.zip : '');
+                    }
+                    document.getElementById(`stop_address_${stopNumber}`).textContent = addressDisplay;
+                    document.getElementById(`stop_info_${stopNumber}`).style.display = 'block';
+                }
+            );
+        }
+
+        // Drag and Drop Functionality
+        function initializeDragEvents(element) {
+            element.addEventListener('dragstart', handleDragStart);
+            element.addEventListener('dragover', handleDragOver);
+            element.addEventListener('drop', handleDrop);
+            element.addEventListener('dragend', handleDragEnd);
+        }
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.outerHTML);
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            this.classList.add('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (draggedElement !== this) {
+                const container = document.getElementById('sortable_stops_container');
+                const draggedIndex = Array.from(container.children).indexOf(draggedElement);
+                const targetIndex = Array.from(container.children).indexOf(this);
+                
+                if (draggedIndex < targetIndex) {
+                    container.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    container.insertBefore(draggedElement, this);
+                }
+                
+                updateStopRoles();
+            }
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            // Remove drag-over class from all elements
+            document.querySelectorAll('.stop-item').forEach(item => {
+                item.classList.remove('drag-over');
+            });
+        }
+
+        function updateStopRoles() {
+            const container = document.getElementById('sortable_stops_container');
+            const stops = Array.from(container.children);
+            
+            stops.forEach((stop, index) => {
+                const badge = stop.querySelector('.stop-role-badge');
+                const removeBtn = stop.querySelector('.remove-stop');
+                
+                if (index === 0) {
+                    // First stop is always shipper (origin)
+                    stop.setAttribute('data-stop-type', 'origin');
+                    badge.className = 'stop-role-badge badge bg-success';
+                    badge.textContent = 'Shipper (Origin)';
+                    removeBtn.style.display = 'none'; // Can't remove origin
+                } else if (index === stops.length - 1) {
+                    // Last stop is always consignee (destination)  
+                    stop.setAttribute('data-stop-type', 'destination');
+                    badge.className = 'stop-role-badge badge bg-danger';
+                    badge.textContent = 'Consignee (Destination)';
+                    removeBtn.style.display = 'none'; // Can't remove destination
+                } else {
+                    // Middle stops are intermediate
+                    stop.setAttribute('data-stop-type', 'intermediate');
+                    badge.className = 'stop-role-badge badge bg-warning';
+                    badge.textContent = 'Intermediate Stop';
+                    removeBtn.style.display = 'inline-block'; // Can remove intermediate stops
+                }
+                
+                // Update placeholder text based on role
+                const searchField = stop.querySelector('.stop-address-search');
+                if (searchField) {
+                    if (index === 0) {
+                        searchField.placeholder = 'Search shipper address...';
+                    } else if (index === stops.length - 1) {
+                        searchField.placeholder = 'Search consignee address...';
+                    } else {
+                        searchField.placeholder = 'Search intermediate stop address...';
+                    }
+                }
+            });
+        }
+
+        // Initialize drag events on existing elements
+        document.addEventListener('DOMContentLoaded', function() {
+            const existingStops = document.querySelectorAll('.stop-item');
+            existingStops.forEach(stop => {
+                initializeDragEvents(stop);
+            });
+        });
+
+        // Update form submission to include stops data
+        function updateStopsData() {
+            const form = document.getElementById('loadForm');
+            
+            // Remove existing stop hidden inputs
+            const existingStopInputs = form.querySelectorAll('input[name^="stops_data"]');
+            existingStopInputs.forEach(input => input.remove());
+            
+            // Collect all stops data in order
+            const container = document.getElementById('sortable_stops_container');
+            const stops = [];
+            const stopElements = Array.from(container.children);
+            
+            stopElements.forEach((stopElement, index) => {
+                const stopId = stopElement.getAttribute('data-stop-id');
+                const stopType = stopElement.getAttribute('data-stop-type');
+                
+                let keyField, searchField, reasonField, manualDiv;
+                
+                if (stopType === 'origin') {
+                    keyField = document.getElementById('origin_key');
+                    searchField = document.getElementById('origin_search');
+                    reasonField = document.getElementById('origin_stop_reason');
+                    manualDiv = document.getElementById('manual_address_origin');
+                } else if (stopType === 'destination') {
+                    keyField = document.getElementById('destination_key');
+                    searchField = document.getElementById('destination_search');
+                    reasonField = document.getElementById('dest_stop_reason');
+                    manualDiv = document.getElementById('manual_address_destination');
+                } else {
+                    const stopNumber = stopId.replace('stop_', '');
+                    keyField = document.getElementById(`stop_key_${stopNumber}`);
+                    searchField = document.getElementById(`stop_search_${stopNumber}`);
+                    reasonField = document.getElementById(`stop_reason_${stopNumber}`);
+                    manualDiv = document.getElementById(`manual_address_${stopId}`);
+                }
+                
+                const stop = {
+                    sequence: index + 1,
+                    type: stopType,
+                    key: keyField ? keyField.value : '',
+                    reason: reasonField ? reasonField.value : '',
+                    search_text: searchField ? searchField.value : ''
+                };
+                
+                // Check for manual address entry
+                if (manualDiv && manualDiv.style.display !== 'none') {
+                    const manualInputs = manualDiv.querySelectorAll('input');
+                    stop.manual = {
+                        company_name: manualInputs[0] ? manualInputs[0].value : '',
+                        address1: manualInputs[1] ? manualInputs[1].value : '',
+                        address2: manualInputs[2] ? manualInputs[2].value : '',
+                        city: manualInputs[3] ? manualInputs[3].value : '',
+                        state: manualInputs[4] ? manualInputs[4].value : '',
+                        zip: manualInputs[5] ? manualInputs[5].value : ''
+                    };
+                }
+                
+                stops.push(stop);
+            });
+            
+            // Add stops data as hidden input
+            if (stops.length > 0) {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'stops_data';
+                hiddenInput.value = JSON.stringify(stops);
+                form.appendChild(hiddenInput);
+            }
+            
+            // Also set origin_key and destination_key based on current order
+            const originStop = stops.find(s => s.type === 'origin');
+            const destinationStop = stops.find(s => s.type === 'destination');
+            
+            if (originStop) {
+                document.getElementById('origin_key').value = originStop.key;
+            }
+            if (destinationStop) {
+                document.getElementById('destination_key').value = destinationStop.key;
+            }
+        }
+
+        // Update the form submission to include stops data
+        document.getElementById('loadForm').addEventListener('submit', function(e) {
+            updateStopsData();
+        });
     </script>
 </body>
 </html>
