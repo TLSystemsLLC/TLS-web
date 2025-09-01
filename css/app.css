@@ -1,0 +1,127 @@
+/**
+ * TLS Operations - Application CSS
+ * Global styles for the TLS Operations web application
+ */
+
+/* Scrollable dropdown menus for long menu lists */
+.dropdown-menu-scrollable {
+    max-height: 70vh; /* Maximum height is 70% of viewport height */
+    overflow-y: auto; /* Enable vertical scrolling */
+    border: 1px solid #dee2e6;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Ensure dropdown doesn't get cut off at screen edges */
+.dropdown-menu-scrollable {
+    position: absolute;
+    z-index: 1050; /* Above other content */
+}
+
+/* Custom scrollbar styling for webkit browsers */
+
+/* Autocomplete styling */
+.autocomplete-results {
+    border: 1px solid #ced4da !important;
+    border-top: none !important;
+    border-radius: 0 0 0.375rem 0.375rem !important;
+    background: white;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.autocomplete-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.autocomplete-item:hover,
+.autocomplete-item.active {
+    background-color: #e9ecef;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+/* Form enhancements */
+.customer-info,
+.origin-info,
+.destination-info {
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    border-left: 3px solid #0d6efd;
+}
+
+/* Accordion enhancements */
+.accordion-button:not(.collapsed) {
+    background-color: #e7f1ff;
+    color: #0c63e4;
+}
+.dropdown-menu-scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.dropdown-menu-scrollable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.dropdown-menu-scrollable::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.dropdown-menu-scrollable::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Sticky navigation adjustments */
+.navbar.sticky-top {
+    z-index: 1030; /* Ensure it stays above other content */
+}
+
+/* Enhanced dropdown section styling */
+.dropdown-menu .dropdown-header {
+    padding: 0.75rem 1rem 0.5rem 1rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #495057;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    margin: 0.25rem 0;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-left: 3px solid #007bff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.dropdown-menu .dropdown-divider {
+    margin: 0.5rem 0;
+    border-color: #dee2e6;
+}
+
+/* Enhanced dropdown item spacing for better section separation */
+.dropdown-menu .dropdown-item {
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #007bff;
+    transform: translateX(2px);
+}
+
+/* Special styling for items that follow headers */
+.dropdown-menu .dropdown-header + li .dropdown-item,
+.dropdown-menu .dropdown-header + .dropdown-divider + li .dropdown-item {
+    margin-left: 0.5rem;
+    border-left: 2px solid transparent;
+}
+
+.dropdown-menu .dropdown-header + li .dropdown-item:hover,
+.dropdown-menu .dropdown-header + .dropdown-divider + li .dropdown-item:hover {
+    border-left-color: #007bff;
+}
