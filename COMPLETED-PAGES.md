@@ -98,7 +98,7 @@ This document provides a comprehensive inventory of all completed web pages in t
 
 ### 5. Driver Maintenance (`/tls/safety/driver-maintenance.php`)
 
-**Purpose:** Complete driver information management with PII protection  
+**Purpose:** Driver information management with basic record maintenance (addresses, contacts, and comments identified for future implementation)  
 **VB6 Origin:** `frmDriverMaint.frm`  
 **Security:** Requires authentication  
 **Menu Permission:** `mnuDriverMaint`  
@@ -111,7 +111,7 @@ This document provides a comprehensive inventory of all completed web pages in t
 - Driver search with active/inactive toggle
 - Single digit DriverKey support
 - PII protection (DriverID hidden behind security prompt)
-- Complete driver information form (all VB6 fields except EFS)
+- Basic driver information form (core tDriver table fields)
 - Real-time change detection
 - Form validation with user-friendly messages
 - Professional card-based layout
@@ -120,6 +120,44 @@ This document provides a comprehensive inventory of all completed web pages in t
 - 34 parameters matching stored procedure exactly
 - Data type validation (CHAR, VARCHAR, INT, BIT, DATETIME, MONEY)
 - Proper field constraints and length validation
+
+**Implementation Status:** ~35% Complete (Basic driver record maintenance operational)
+
+**Missing Functionality (Identified for Future Implementation):**
+Based on VB6 class hierarchy analysis (`frmDriverMaint.frm` → `clsDriver` → collections):
+
+*Address Management (clsDriverNameAddresses → clsNameAddress):*
+- `spNameAddress_Save` - Saves address data to tNameAddress table
+- `spDriverNameAddresses_Save` - Links addresses to drivers
+- `spDriverNameAddresses_Get` - Retrieves driver addresses
+- UI fields: Name1, Name2, Address1-4, City, State, Zip, Phone, QuickKey
+
+*Contact Management (clsContacts → clsContact):*
+- `spContact_Save` - Saves individual contact records
+- `spContact_Get` - Retrieves contact information
+- `spContact_Delete` - Removes contacts
+- `spContacts_Save` - Manages contact collections
+- UI: Contact grid with CRUD operations
+
+*Comment Management (clsDriverComments → clsComment):*
+- `spComment_Save` - Saves driver comments
+- `spComment_Get` - Retrieves comments
+- `spComment_Delete` - Removes comments
+- `spDriverComments_Save` - Links comments to drivers
+- UI: Comment management interface
+
+*Company Pay Rate Management:*
+- `spDriverCompanyPayRate_Save` - Saves pay rate information
+- `spDriverCompanyPayRate_Get` - Retrieves pay rates
+- UI: Pay rate configuration (excluding EFS functionality)
+
+**VB6 Class Architecture Discovered:**
+- **clsDriver** (main class with collections)
+  - mDriverNameAddresses As clsDriverNameAddresses
+  - mDriverComments As clsDriverComments
+- **Two-tier address storage**: tNameAddress (data) + tDriver_tNameAddress (relationships)
+- **Collection-based data management** for addresses, contacts, and comments
+- **Complete CRUD operations** for all child objects
 
 ---
 
