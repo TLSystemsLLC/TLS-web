@@ -424,66 +424,7 @@ $menuManager = new MenuManager($auth);
                                             </div>
                                         </div>
                                     </div>
-                                    
-                                    <!-- Pay Information -->
-                                    <div class="tls-form-card mt-3">
-                                        <div class="card-header">
-                                            <i class="bi-cash"></i>Pay Information
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="row">
-                                                <div class="col-md-3">
-                                                    <label for="pay_type" class="form-label">Pay Type:</label>
-                                                    <select class="form-select" id="pay_type" name="pay_type">
-                                                        <option value="" <?php echo empty($driver['PayType']) ? 'selected' : ''; ?>>Select Pay Type</option>
-                                                        <option value="M" <?php echo ($driver['PayType'] ?? '') === 'M' ? 'selected' : ''; ?>>Mileage</option>
-                                                        <option value="P" <?php echo ($driver['PayType'] ?? '') === 'P' ? 'selected' : ''; ?>>Percentage</option>
-                                                        <option value="S" <?php echo ($driver['PayType'] ?? '') === 'S' ? 'selected' : ''; ?>>Salary</option>
-                                                        <option value="W" <?php echo ($driver['PayType'] ?? '') === 'W' ? 'selected' : ''; ?>>Weekly</option>
-                                                    </select>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="company_loaded_pay" class="form-label">Company Loaded Pay:</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" class="form-control" id="company_loaded_pay" name="company_loaded_pay" 
-                                                               value="<?php echo htmlspecialchars($driver['CompanyLoadedPay'] ?? ''); ?>" 
-                                                               step="0.01" min="0">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="company_empty_pay" class="form-label">Company Empty Pay:</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" class="form-control" id="company_empty_pay" name="company_empty_pay" 
-                                                               value="<?php echo htmlspecialchars($driver['CompanyEmptyPay'] ?? ''); ?>" 
-                                                               step="0.01" min="0">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="row mt-3">
-                                                <div class="col-md-3">
-                                                    <label for="company_tarp_pay" class="form-label">Company Tarp Pay:</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" class="form-control" id="company_tarp_pay" name="company_tarp_pay" 
-                                                               value="<?php echo htmlspecialchars($driver['CompanyTarpPay'] ?? ''); ?>" 
-                                                               step="0.01" min="0">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="company_stop_pay" class="form-label">Company Stop Pay:</label>
-                                                    <div class="input-group">
-                                                        <span class="input-group-text">$</span>
-                                                        <input type="number" class="form-control" id="company_stop_pay" name="company_stop_pay" 
-                                                               value="<?php echo htmlspecialchars($driver['CompanyStopPay'] ?? ''); ?>" 
-                                                               step="0.01" min="0">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
+                                
                                 <!-- License & Certification -->
                                 <div class="tls-form-card mt-3">
                                     <div class="card-header">
@@ -579,6 +520,38 @@ $menuManager = new MenuManager($auth);
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- Tax ID (PII) Section - Below License -->
+                                    <div class="tls-form-card tls-pii-section mt-3">
+                                        <div class="card-header">
+                                            <i class="bi-shield-lock"></i>Tax Information (Protected)
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-4" id="tax_id_section" style="display: none;">
+                                                    <label for="driver_id" class="form-label">Tax ID <span class="required">*</span>:</label>
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control" id="driver_id" name="driver_id" 
+                                                               value="<?php echo htmlspecialchars($driver['DriverID'] ?? ''); ?>" 
+                                                               maxlength="9" required>
+                                                        <button type="button" class="btn btn-outline-secondary" onclick="hidePII()" title="Hide Tax ID">
+                                                            <i class="bi-eye-slash"></i>
+                                                        </button>
+                                                    </div>
+                                                    <small class="text-muted">Personally Identifiable Information</small>
+                                                </div>
+                                                <div class="col-md-4" id="show_pii_section">
+                                                    <label class="form-label">Tax ID:</label>
+                                                    <div>
+                                                        <button type="button" class="btn btn-warning" onclick="showPII()" title="Show Tax ID (PII)">
+                                                            <i class="bi-eye"></i> Show Tax ID
+                                                        </button>
+                                                        <small class="d-block text-muted mt-1">Click to view protected information</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <!-- Right Column - Address & Contacts -->
@@ -666,32 +639,60 @@ $menuManager = new MenuManager($auth);
                                         </div>
                                     </div>
                                     
-                                    <!-- Tax ID (PII) Section -->
-                                    <div class="tls-form-card tls-pii-section mt-3">
+                                    
+                                    <!-- Pay Information -->
+                                    <div class="tls-form-card mt-3">
                                         <div class="card-header">
-                                            <i class="bi-shield-lock"></i>Tax Information (Protected)
+                                            <i class="bi-cash"></i>Pay Information
                                         </div>
                                         <div class="card-body">
                                             <div class="row">
-                                                <div class="col-md-4" id="tax_id_section" style="display: none;">
-                                                    <label for="driver_id" class="form-label">Tax ID <span class="required">*</span>:</label>
-                                                    <div class="input-group">
-                                                        <input type="text" class="form-control" id="driver_id" name="driver_id" 
-                                                               value="<?php echo htmlspecialchars($driver['DriverID'] ?? ''); ?>" 
-                                                               maxlength="9" required>
-                                                        <button type="button" class="btn btn-outline-secondary" onclick="hidePII()" title="Hide Tax ID">
-                                                            <i class="bi-eye-slash"></i>
-                                                        </button>
-                                                    </div>
-                                                    <small class="text-muted">Personally Identifiable Information</small>
+                                                <div class="col-md-3">
+                                                    <label for="pay_type" class="form-label">Pay Type:</label>
+                                                    <select class="form-select" id="pay_type" name="pay_type">
+                                                        <option value="" <?php echo empty($driver['PayType']) ? 'selected' : ''; ?>>Select Pay Type</option>
+                                                        <option value="M" <?php echo ($driver['PayType'] ?? '') === 'M' ? 'selected' : ''; ?>>Mileage</option>
+                                                        <option value="P" <?php echo ($driver['PayType'] ?? '') === 'P' ? 'selected' : ''; ?>>Percentage</option>
+                                                        <option value="S" <?php echo ($driver['PayType'] ?? '') === 'S' ? 'selected' : ''; ?>>Salary</option>
+                                                        <option value="W" <?php echo ($driver['PayType'] ?? '') === 'W' ? 'selected' : ''; ?>>Weekly</option>
+                                                    </select>
                                                 </div>
-                                                <div class="col-md-4" id="show_pii_section">
-                                                    <label class="form-label">Tax ID:</label>
-                                                    <div>
-                                                        <button type="button" class="btn btn-warning" onclick="showPII()" title="Show Tax ID (PII)">
-                                                            <i class="bi-eye"></i> Show Tax ID
-                                                        </button>
-                                                        <small class="d-block text-muted mt-1">Click to view protected information</small>
+                                                <div class="col-md-3">
+                                                    <label for="company_loaded_pay" class="form-label">Company Loaded Pay:</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control" id="company_loaded_pay" name="company_loaded_pay" 
+                                                               value="<?php echo htmlspecialchars($driver['CompanyLoadedPay'] ?? ''); ?>" 
+                                                               step="0.01" min="0">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="company_empty_pay" class="form-label">Company Empty Pay:</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control" id="company_empty_pay" name="company_empty_pay" 
+                                                               value="<?php echo htmlspecialchars($driver['CompanyEmptyPay'] ?? ''); ?>" 
+                                                               step="0.01" min="0">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row mt-3">
+                                                <div class="col-md-3">
+                                                    <label for="company_tarp_pay" class="form-label">Company Tarp Pay:</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control" id="company_tarp_pay" name="company_tarp_pay" 
+                                                               value="<?php echo htmlspecialchars($driver['CompanyTarpPay'] ?? ''); ?>" 
+                                                               step="0.01" min="0">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <label for="company_stop_pay" class="form-label">Company Stop Pay:</label>
+                                                    <div class="input-group">
+                                                        <span class="input-group-text">$</span>
+                                                        <input type="number" class="form-control" id="company_stop_pay" name="company_stop_pay" 
+                                                               value="<?php echo htmlspecialchars($driver['CompanyStopPay'] ?? ''); ?>" 
+                                                               step="0.01" min="0">
                                                     </div>
                                                 </div>
                                             </div>
