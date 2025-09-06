@@ -41,7 +41,7 @@ class TLSFormTracker {
         this.cancelButton = document.getElementById(this.options.cancelButtonId);
         this.resetButton = document.getElementById(this.options.resetButtonId);
         this.saveIndicator = document.getElementById(this.options.saveIndicatorId);
-        this.changeCounter = document.getElementById(this.options.changeCounterId);
+        this.changeCounter = this.options.changeCounterId ? document.getElementById(this.options.changeCounterId) : null;
 
         if (!this.form) {
             console.warn('TLS Form Tracker: Form not found');
@@ -59,23 +59,24 @@ class TLSFormTracker {
     }
 
     captureOriginalValues() {
-        const formData = new FormData(this.form);
+        var formData = new FormData(this.form);
         this.originalValues = {};
         
-        for (const [name, value] of formData.entries()) {
-            if (!this.options.excludeFields.includes(name)) {
+        formData.forEach(function(value, name) {
+            if (this.options.excludeFields.indexOf(name) === -1) {
                 this.originalValues[name] = value;
+            }
+        }.bind(this));
+
+        // Also capture checkbox states
+        var checkboxes = this.form.querySelectorAll('input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            var checkbox = checkboxes[i];
+            if (this.options.excludeFields.indexOf(checkbox.name) === -1) {
+                this.originalValues[checkbox.name] = checkbox.checked;
             }
         }
 
-        // Also capture checkbox states
-        this.form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            if (!this.options.excludeFields.includes(checkbox.name)) {
-                this.originalValues[checkbox.name] = checkbox.checked;
-            }
-        });
-
-        console.log('TLS Form Tracker: Captured original values', this.originalValues);
     }
 
     setupEventListeners() {
@@ -133,59 +134,61 @@ class TLSFormTracker {
     }
 
     detectChanges() {
-        const formData = new FormData(this.form);
-        const currentValues = {};
+        var formData = new FormData(this.form);
+        var currentValues = {};
         
         // Get current form values
-        for (const [name, value] of formData.entries()) {
-            if (!this.options.excludeFields.includes(name)) {
+        formData.forEach(function(value, name) {
+            if (this.options.excludeFields.indexOf(name) === -1) {
                 currentValues[name] = value;
+            }
+        }.bind(this));
+
+        // Check checkboxes separately
+        var checkboxes = this.form.querySelectorAll('input[type="checkbox"]');
+        for (var i = 0; i < checkboxes.length; i++) {
+            var checkbox = checkboxes[i];
+            if (this.options.excludeFields.indexOf(checkbox.name) === -1) {
+                currentValues[checkbox.name] = checkbox.checked;
             }
         }
 
-        // Check checkboxes separately
-        this.form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-            if (!this.options.excludeFields.includes(checkbox.name)) {
-                currentValues[checkbox.name] = checkbox.checked;
-            }
-        });
-
         // Compare with original values
         this.trackedChanges = [];
-        let hasChanges = false;
+        var hasChanges = false;
 
-        for (const [name, currentValue] of Object.entries(currentValues)) {
-            const originalValue = this.originalValues[name];
-            if (currentValue !== originalValue) {
-                this.trackedChanges.push({
-                    field: name,
-                    originalValue: originalValue,
-                    currentValue: currentValue
-                });
-                hasChanges = true;
+        for (var name in currentValues) {
+            if (currentValues.hasOwnProperty(name)) {
+                var currentValue = currentValues[name];
+                var originalValue = this.originalValues[name];
+                if (currentValue !== originalValue) {
+                    this.trackedChanges.push({
+                        field: name,
+                        originalValue: originalValue,
+                        currentValue: currentValue
+                    });
+                    hasChanges = true;
+                }
             }
         }
 
         // Check for removed fields
-        for (const [name, originalValue] of Object.entries(this.originalValues)) {
-            if (!(name in currentValues) && originalValue !== '' && originalValue !== false) {
-                this.trackedChanges.push({
-                    field: name,
-                    originalValue: originalValue,
-                    currentValue: ''
-                });
-                hasChanges = true;
+        for (var name in this.originalValues) {
+            if (this.originalValues.hasOwnProperty(name)) {
+                var originalValue = this.originalValues[name];
+                if (!(name in currentValues) && originalValue !== '' && originalValue !== false) {
+                    this.trackedChanges.push({
+                        field: name,
+                        originalValue: originalValue,
+                        currentValue: ''
+                    });
+                    hasChanges = true;
+                }
             }
         }
 
         this.hasUnsavedChanges = hasChanges;
         this.updateUI();
-
-        console.log('TLS Form Tracker: Changes detected', {
-            hasChanges: this.hasUnsavedChanges,
-            changeCount: this.trackedChanges.length,
-            changes: this.trackedChanges
-        });
     }
 
     updateUI() {
@@ -205,10 +208,10 @@ class TLSFormTracker {
             this.saveIndicator.style.display = this.hasUnsavedChanges ? 'block' : 'none';
         }
 
-        // Update change counter
-        if (this.changeCounter) {
-            this.changeCounter.textContent = this.trackedChanges.length;
-            this.changeCounter.style.display = this.hasUnsavedChanges ? 'inline-block' : 'none';
+        // Update change counter text in banner
+        var changeCounterText = document.getElementById('tls-change-counter-text');
+        if (changeCounterText) {
+            changeCounterText.textContent = this.trackedChanges.length.toString();
         }
     }
 
