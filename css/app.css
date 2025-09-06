@@ -237,16 +237,28 @@
     color: white !important;
 }
 
-.tls-btn-primary:disabled {
+.tls-btn-primary:disabled,
+.btn.tls-btn-primary:disabled,
+button.tls-btn-primary:disabled,
+button.btn.tls-btn-primary:disabled {
+    background-color: #6c757d !important;
+    background-image: none !important;
     background: #6c757d !important;
     border: 2px solid #6c757d !important;
-    border-radius: 8px;
-    padding: 0.625rem 1.5rem;
-    font-weight: 500;
+    border-color: #6c757d !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.5rem !important;
+    font-weight: 500 !important;
     color: #ffffff !important;
-    opacity: 0.7;
-    cursor: not-allowed;
-    transition: all 0.2s ease;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    transition: all 0.2s ease !important;
+    transform: none !important;
+    box-shadow: none !important;
+    min-height: 48px !important;
+    line-height: 1.5 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 .tls-btn-secondary {
@@ -267,16 +279,28 @@
     color: white !important;
 }
 
-.tls-btn-secondary:disabled {
+.tls-btn-secondary:disabled,
+.btn.tls-btn-secondary:disabled,
+button.tls-btn-secondary:disabled,
+button.btn.tls-btn-secondary:disabled {
+    background-color: #6c757d !important;
+    background-image: none !important;
     background: #6c757d !important;
     border: 2px solid #6c757d !important;
-    border-radius: 8px;
-    padding: 0.625rem 1.5rem;
-    font-weight: 500;
+    border-color: #6c757d !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.5rem !important;
+    font-weight: 500 !important;
     color: #ffffff !important;
-    opacity: 0.7;
-    cursor: not-allowed;
-    transition: all 0.2s ease;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    transition: all 0.2s ease !important;
+    transform: none !important;
+    box-shadow: none !important;
+    min-height: 48px !important;
+    line-height: 1.5 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 .tls-btn-warning {
@@ -293,6 +317,30 @@
     background: linear-gradient(135deg, #e0a800, #d39e00);
     transform: translateY(-1px);
     color: #212529;
+}
+
+.tls-btn-warning:disabled,
+.btn.tls-btn-warning:disabled,
+button.tls-btn-warning:disabled,
+button.btn.tls-btn-warning:disabled {
+    background-color: #6c757d !important;
+    background-image: none !important;
+    background: #6c757d !important;
+    border: 2px solid #6c757d !important;
+    border-color: #6c757d !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.5rem !important;
+    font-weight: 500 !important;
+    color: #ffffff !important;
+    opacity: 1 !important;
+    cursor: not-allowed !important;
+    transition: all 0.2s ease !important;
+    transform: none !important;
+    box-shadow: none !important;
+    min-height: 48px !important;
+    line-height: 1.5 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
 }
 
 /* Change Tracking & Save Indicator - Banner Style */

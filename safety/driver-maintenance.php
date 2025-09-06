@@ -510,10 +510,11 @@ $menuManager = new MenuManager($auth);
                 console.log('Input event for:', this.input.id, 'Query:', query);
                 clearTimeout(this.searchTimeout);
                 
-                if (query.length < 2) {
-                    console.log('Query too short, hiding results');
+                // Allow single character searches for DriverKey
+                if (query.length < 1) {
+                    console.log('Empty query, hiding results');
                     this.hideResults();
-                    this.updateStatus('Type at least 2 characters to search');
+                    this.updateStatus('Type driver name or DriverKey');
                     return;
                 }
                 
@@ -695,6 +696,26 @@ $menuManager = new MenuManager($auth);
             
             // Let autocomplete handle all input - both names and DriverKeys
             // The API now searches by DriverKey as well as names
+            
+            // Handle form submission for direct DriverKey entry
+            document.getElementById('searchForm').addEventListener('submit', function(e) {
+                const searchInput = document.getElementById('driver_search');
+                const hiddenKeyField = document.getElementById('driver_key');
+                const searchValue = searchInput.value.trim();
+                
+                // If user typed a number and didn't select from autocomplete, use it as DriverKey
+                if (searchValue && /^\d+$/.test(searchValue) && !hiddenKeyField.value) {
+                    console.log('Direct DriverKey entry detected:', searchValue);
+                    hiddenKeyField.value = searchValue;
+                }
+                
+                // Make sure we have a driver_key value before submitting
+                if (!hiddenKeyField.value) {
+                    e.preventDefault();
+                    alert('Please enter a valid DriverKey or select a driver from the search results.');
+                    return false;
+                }
+            });
             
             // Re-trigger search when include_inactive checkbox changes
             document.getElementById('include_inactive')?.addEventListener('change', function() {

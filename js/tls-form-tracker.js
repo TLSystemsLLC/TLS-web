@@ -192,13 +192,7 @@ class TLSFormTracker {
         // Update save button state
         if (this.saveButton) {
             this.saveButton.disabled = !this.hasUnsavedChanges;
-            if (this.hasUnsavedChanges) {
-                this.saveButton.classList.add('tls-btn-primary');
-                this.saveButton.classList.remove('btn-secondary');
-            } else {
-                this.saveButton.classList.remove('tls-btn-primary');
-                this.saveButton.classList.add('btn-secondary');
-            }
+            // Don't change button classes - let CSS handle the visual state via :disabled
         }
 
         // Update reset button state
