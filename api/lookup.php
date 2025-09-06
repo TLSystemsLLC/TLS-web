@@ -46,6 +46,10 @@ try {
             $customerId = (int)($_GET['customer_id'] ?? 0);
             $results = lookupCustomerLocations($db, $customerId, $query, $limit);
             break;
+        case 'drivers':
+            $includeInactive = isset($_GET['include_inactive']) && $_GET['include_inactive'] === 'true';
+            $results = lookupDrivers($db, $query, $limit, $includeInactive);
+            break;
         default:
             http_response_code(400);
             echo json_encode(['error' => 'Invalid lookup type']);
@@ -119,7 +123,7 @@ function lookupCustomers(Database $db, string $query, int $limit): array
         error_log("Error counting customers: " . $e->getMessage());
     }
     
-    // Filter for active customers: EndDate = '1899-12-30' means active (not entered/active)
+    // Filter for active customers: EndDate = '1899-12-30' means no end date (active)
     // Any other date means customer was made inactive on that date
     $sql = "SELECT TOP $limit 
                 CustomerKey,
@@ -242,6 +246,82 @@ function lookupCustomerLocations(Database $db, int $customerId, string $query, i
             'zip' => $row['Zip'],
             'phone' => $row['Phone'],
             'contact' => $row['Contact']
+        ];
+    }, $results);
+}
+
+function lookupDrivers(Database $db, string $query, int $limit, bool $includeInactive = false): array
+{
+    // Debug: Check driver counts based on EndDate only
+    try {
+        $totalDrivers = $db->query("SELECT COUNT(*) as total FROM tDriver", []);
+        error_log("Total drivers in database: " . ($totalDrivers[0]['total'] ?? 0));
+        
+        $activeDrivers = $db->query("SELECT COUNT(*) as total FROM tDriver WHERE EndDate = '1899-12-30 00:00:00.000'", []);
+        error_log("Active drivers (no end date): " . ($activeDrivers[0]['total'] ?? 0));
+        
+        $inactiveDrivers = $db->query("SELECT COUNT(*) as total FROM tDriver WHERE EndDate != '1899-12-30 00:00:00.000'", []);
+        error_log("Inactive drivers (with end date): " . ($inactiveDrivers[0]['total'] ?? 0));
+        
+    } catch (Exception $e) {
+        error_log("Error counting drivers: " . $e->getMessage());
+    }
+    
+    // Build WHERE clause based on active/inactive toggle
+    $dateFilter = $includeInactive ? 
+        "" : // No filter - include all drivers
+        "AND EndDate = '1899-12-30 00:00:00.000'"; // Only active drivers (no end date)
+    
+    // Search drivers by name or driver ID
+    $sql = "SELECT TOP $limit 
+                DriverKey,
+                DriverID,
+                FirstName,
+                MiddleName,
+                LastName,
+                Email,
+                Active,
+                DriverType,
+                EndDate,
+                PhysicalExpires,
+                LicenseExpires,
+                ISNULL(FirstName, '') + ' ' + ISNULL(MiddleName + ' ', '') + ISNULL(LastName, '') as FullName
+            FROM tDriver 
+            WHERE (FirstName LIKE ? 
+                OR LastName LIKE ?
+                OR DriverID LIKE ?
+                OR (FirstName + ' ' + LastName) LIKE ?)
+                $dateFilter
+            ORDER BY LastName, FirstName";
+    
+    $searchTerm = '%' . $query . '%';
+    error_log("Driver search query: $sql with searchTerm: $searchTerm, includeInactive: " . ($includeInactive ? 'true' : 'false'));
+    $results = $db->query($sql, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+    error_log("Driver search returned " . count($results) . " results");
+    
+    return array_map(function($row) {
+        $displayName = trim($row['FirstName'] . ' ' . ($row['MiddleName'] ? $row['MiddleName'] . ' ' : '') . $row['LastName']);
+        // Determine if driver is active based on EndDate
+        $isActive = $row['EndDate'] === '1899-12-30 00:00:00.000';
+        $statusLabel = $isActive ? '' : ' (INACTIVE)';
+        
+        // Debug: log each DriverKey being returned
+        error_log("API returning DriverKey: " . $row['DriverKey'] . " for driver: " . $displayName);
+        
+        return [
+            'id' => $row['DriverKey'],
+            'label' => $displayName . ' (' . $row['DriverKey'] . ')' . $statusLabel,
+            'driver_id' => $row['DriverID'],
+            'first_name' => $row['FirstName'],
+            'middle_name' => $row['MiddleName'],
+            'last_name' => $row['LastName'],
+            'full_name' => $displayName,
+            'email' => $row['Email'],
+            'active' => $row['Active'],
+            'driver_type' => $row['DriverType'],
+            'end_date' => $row['EndDate'],
+            'physical_expires' => $row['PhysicalExpires'],
+            'license_expires' => $row['LicenseExpires']
         ];
     }, $results);
 }

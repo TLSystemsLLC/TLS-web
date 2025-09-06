@@ -256,6 +256,7 @@ return array (
       'mnuLoadEntry' => 
       array (
         'label' => 'Load Entry',
+        'url' => '/tls/dispatch/load-entry.php',
       ),
       'mnuAvailLoads' => 
       array (
@@ -347,6 +348,7 @@ return array (
       'mnuLoadEntryLog' => 
       array (
         'label' => 'Load Entry',
+        'url' => '/tls/dispatch/load-entry.php',
       ),
       'mnuAvailTrucks' => 
       array (
@@ -514,6 +516,7 @@ return array (
       'mnuDriverMaint' => 
       array (
         'label' => 'Driver Maintenance',
+        'url' => '/tls/safety/driver-maintenance.php',
       ),
       'mnuOwnerMaint' => 
       array (

@@ -372,19 +372,9 @@ try {
     <link href="/tls/css/app.css" rel="stylesheet">
     
     <style>
+        /* Use standardized TLS card styling for permission cards */
         .permission-card {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            transition: box-shadow 0.2s ease;
-        }
-        .permission-card:hover {
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .permission-card .card-header {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
+            /* Inherits from tls-form-card styles */
         }
         .permission-item {
             padding: 0.5rem 0;
@@ -414,12 +404,7 @@ try {
             opacity: 0.6;
             pointer-events: none;
         }
-        .save-indicator {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 1050;
-        }
+        /* Use standardized save indicator positioning from tls-save-indicator */
     </style>
 </head>
 <body>
@@ -429,15 +414,16 @@ try {
     <div class="container-fluid mt-4">
         <div class="row">
             <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h2><i class="bi bi-shield-lock me-2"></i>User Security Management</h2>
-                    <div>
-                        <button class="btn btn-success" id="saveBtn" disabled>
+                <div class="tls-page-header">
+                    <h2 class="tls-page-title"><i class="bi bi-shield-lock me-2"></i>User Security Management</h2>
+                    <div class="tls-top-actions">
+                        <button class="btn tls-btn-primary" id="saveBtn" disabled>
                             <i class="bi bi-check-lg me-2"></i>Save Changes
                         </button>
-                        <button class="btn btn-outline-secondary ms-2" id="resetBtn" disabled>
+                        <button class="btn tls-btn-secondary ms-2" id="resetBtn" disabled>
                             <i class="bi bi-arrow-clockwise me-2"></i>Reset
                         </button>
+                        <span class="tls-change-counter" id="changeCounter" style="display: none;">0</span>
                     </div>
                 </div>
 
@@ -493,7 +479,7 @@ try {
                 <div class="row" id="permissionCards" style="display: none;">
                     <?php foreach ($organizedMenus as $category): ?>
                         <div class="col-lg-6">
-                            <div class="permission-card" data-category="<?= htmlspecialchars($category['key']) ?>">
+                            <div class="permission-card tls-form-card" data-category="<?= htmlspecialchars($category['key']) ?>">
                                 <div class="card-header d-flex justify-content-between align-items-center">
                                     <div>
                                         <i class="<?= htmlspecialchars($category['icon']) ?> me-2"></i>
@@ -541,7 +527,7 @@ try {
     </div>
 
     <!-- Save indicator -->
-    <div class="save-indicator" id="saveIndicator" style="display: none;">
+    <div class="tls-save-indicator" id="saveIndicator" style="display: none;">
         <div class="alert alert-warning alert-dismissible fade show" role="alert">
             <i class="bi bi-exclamation-triangle me-2"></i>
             <strong>Unsaved Changes</strong> Don't forget to save!
@@ -609,23 +595,106 @@ try {
 
             // Bulk actions
             document.getElementById('grantAllBtn').addEventListener('click', function() {
-                const visibleToggle = getVisiblePermissionToggles();
-                visibleToggle.forEach(toggle => {
+                const visibleToggles = getVisiblePermissionToggles();
+                let changesProcessed = 0;
+                let changesNeeded = 0;
+                
+                // Count how many changes we need to make
+                visibleToggles.forEach(toggle => {
                     if (!toggle.checked) {
-                        toggle.checked = true;
-                        toggle.dispatchEvent(new Event('change'));
+                        changesNeeded++;
                     }
                 });
+                
+                if (changesNeeded === 0) {
+                    return; // No changes needed
+                }
+                
+                // Process each toggle
+                visibleToggles.forEach(toggle => {
+                    if (!toggle.checked) {
+                        const permissionKey = toggle.dataset.permission;
+                        const oldValue = originalPermissions[permissionKey] || false;
+                        const newValue = true;
+                        
+                        toggle.checked = true;
+                        userPermissions[permissionKey] = newValue;
+                        
+                        // Track this change if it's different from original
+                        if (newValue !== oldValue) {
+                            // Remove any existing change for this permission
+                            permissionChanges = permissionChanges.filter(change => change.menu !== permissionKey);
+                            
+                            // Add the new change
+                            permissionChanges.push({
+                                menu: permissionKey,
+                                granted: newValue
+                            });
+                        }
+                        
+                        changesProcessed++;
+                    }
+                });
+                
+                // Update hasUnsavedChanges and UI after all changes are processed
+                if (changesProcessed > 0) {
+                    hasUnsavedChanges = permissionChanges.length > 0;
+                    console.log(`Bulk Action: Processed ${changesProcessed} changes, total tracked changes: ${permissionChanges.length}, hasUnsavedChanges: ${hasUnsavedChanges}`);
+                    updateUI();
+                }
             });
 
             document.getElementById('denyAllBtn').addEventListener('click', function() {
                 const visibleToggles = getVisiblePermissionToggles();
+                let changesProcessed = 0;
+                let changesNeeded = 0;
+                
+                // Count how many changes we need to make
                 visibleToggles.forEach(toggle => {
                     if (toggle.checked) {
-                        toggle.checked = false;
-                        toggle.dispatchEvent(new Event('change'));
+                        changesNeeded++;
                     }
                 });
+                
+                if (changesNeeded === 0) {
+                    return; // No changes needed
+                }
+                
+                // Process each toggle
+                visibleToggles.forEach(toggle => {
+                    if (toggle.checked) {
+                        const permissionKey = toggle.dataset.permission;
+                        const oldValue = originalPermissions[permissionKey] || false;
+                        const newValue = false;
+                        
+                        toggle.checked = false;
+                        userPermissions[permissionKey] = newValue;
+                        
+                        // Track this change if it's different from original
+                        if (newValue !== oldValue) {
+                            // Remove any existing change for this permission
+                            permissionChanges = permissionChanges.filter(change => change.menu !== permissionKey);
+                            
+                            // Add the new change
+                            permissionChanges.push({
+                                menu: permissionKey,
+                                granted: newValue
+                            });
+                        } else {
+                            // Remove change if back to original value
+                            permissionChanges = permissionChanges.filter(change => change.menu !== permissionKey);
+                        }
+                        
+                        changesProcessed++;
+                    }
+                });
+                
+                // Update hasUnsavedChanges and UI after all changes are processed
+                if (changesProcessed > 0) {
+                    hasUnsavedChanges = permissionChanges.length > 0;
+                    console.log(`Bulk Action: Processed ${changesProcessed} changes, total tracked changes: ${permissionChanges.length}, hasUnsavedChanges: ${hasUnsavedChanges}`);
+                    updateUI();
+                }
             });
 
             // Role templates
@@ -877,6 +946,14 @@ try {
                 saveBtn.disabled = !hasUnsavedChanges;
                 resetBtn.disabled = !hasUnsavedChanges;
                 saveIndicator.style.display = hasUnsavedChanges ? 'block' : 'none';
+                
+                // Update change counter
+                const changeCounter = document.getElementById('changeCounter');
+                if (changeCounter) {
+                    changeCounter.textContent = permissionChanges.length;
+                    changeCounter.style.display = hasUnsavedChanges ? 'inline-block' : 'none';
+                }
+                
                 updateCategoryStats();
                 updateSummaryStats();
             }
