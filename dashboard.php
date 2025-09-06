@@ -4,6 +4,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/classes/Auth.php';
 require_once __DIR__ . '/classes/MenuManager.php';
+require_once __DIR__ . '/classes/DateHelper.php';
 
 // Initialize authentication
 $auth = new Auth(
@@ -13,7 +14,7 @@ $auth = new Auth(
 );
 
 // Require authentication
-$auth->requireAuth('/login.php');
+$auth->requireAuth('/tls/login.php');
 
 // Get current user
 $user = $auth->getCurrentUser();
@@ -34,18 +35,7 @@ $menuManager = new MenuManager($auth);
     
     <!-- Custom CSS -->
     <style>
-        .sidebar {
-            width: 280px;
-            position: fixed;
-            top: 80px;
-            bottom: 0;
-            left: 0;
-            z-index: 100;
-            overflow-y: auto;
-        }
-        
         .main-content {
-            margin-left: 280px;
             padding: 20px;
         }
         
@@ -96,48 +86,24 @@ $menuManager = new MenuManager($auth);
             border-radius: 5px;
         }
         
-        .collapse .nav-link {
-            font-size: 0.9rem;
-            padding-left: 2rem;
-        }
         
-        @media (max-width: 768px) {
-            .sidebar {
-                position: relative;
-                width: 100%;
-                top: 0;
-                margin-bottom: 20px;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-        }
     </style>
 </head>
 <body>
     <!-- Main Navigation -->
     <?= $menuManager->generateMainMenu() ?>
     
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Sidebar Navigation -->
-            <div class="col-md-2 d-none d-md-block p-0">
-                <?= $menuManager->generateSidebarMenu() ?>
-            </div>
-            
-            <!-- Main Content -->
-            <div class="col-md-10 main-content">
+    <div class="container-fluid main-content">
                 <!-- Welcome Section -->
                 <div class="row mb-4">
                     <div class="col-12">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <h1 class="h3 mb-1">Welcome, <?= htmlspecialchars($user['user_id']) ?>!</h1>
-                                <p class="text-muted">Connected to database: <strong><?= htmlspecialchars($user['customer_db']) ?></strong></p>
+                                <h1 class="h3 mb-1">Welcome, <?= htmlspecialchars($user['user_name']) ?>!</h1>
+                                <p class="text-muted">Company: <strong><?= htmlspecialchars($user['company_name']) ?></strong></p>
                             </div>
                             <div class="text-end">
-                                <small class="text-muted">Last login: <?= date('M j, Y g:i A', $user['login_time']) ?></small>
+                                <small class="text-muted">Last login: <?= DateHelper::formatDashboard($user['login_time']) ?> CT</small>
                             </div>
                         </div>
                     </div>
@@ -202,22 +168,22 @@ $menuManager = new MenuManager($auth);
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-6 mb-3">
-                                        <a href="/dispatch/load-entry.php" class="btn btn-outline-primary w-100">
+                                        <a href="/tls/under-development.php?menu=Load Entry" class="btn btn-outline-primary w-100">
                                             <i class="bi bi-plus-circle me-2"></i>Load Entry
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/dispatch/available-loads.php" class="btn btn-outline-primary w-100">
+                                        <a href="/tls/under-development.php?menu=Available Loads" class="btn btn-outline-primary w-100">
                                             <i class="bi bi-list-ul me-2"></i>Available Loads
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/dispatch/load-inquiry.php" class="btn btn-outline-primary w-100">
+                                        <a href="/tls/under-development.php?menu=Load Inquiry" class="btn btn-outline-primary w-100">
                                             <i class="bi bi-search me-2"></i>Load Inquiry
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/dispatch/daily-count.php" class="btn btn-outline-primary w-100">
+                                        <a href="/tls/under-development.php?menu=Daily Count" class="btn btn-outline-primary w-100">
                                             <i class="bi bi-calendar-day me-2"></i>Daily Count
                                         </a>
                                     </div>
@@ -236,22 +202,22 @@ $menuManager = new MenuManager($auth);
                             <div class="card-body">
                                 <div class="row">
                                     <div class="col-6 mb-3">
-                                        <a href="/accounting/voucher-entry.php" class="btn btn-outline-success w-100">
+                                        <a href="/tls/under-development.php?menu=Voucher Entry" class="btn btn-outline-success w-100">
                                             <i class="bi bi-receipt me-2"></i>Voucher Entry
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/accounting/deposit-entry.php" class="btn btn-outline-success w-100">
+                                        <a href="/tls/under-development.php?menu=Deposit Entry" class="btn btn-outline-success w-100">
                                             <i class="bi bi-bank me-2"></i>Deposit Entry
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/accounting/collections.php" class="btn btn-outline-success w-100">
+                                        <a href="/tls/under-development.php?menu=Collections" class="btn btn-outline-success w-100">
                                             <i class="bi bi-telephone me-2"></i>Collections
                                         </a>
                                     </div>
                                     <div class="col-6 mb-3">
-                                        <a href="/accounting/journal-entry.php" class="btn btn-outline-success w-100">
+                                        <a href="/tls/under-development.php?menu=Journal Entry" class="btn btn-outline-success w-100">
                                             <i class="bi bi-journal-plus me-2"></i>Journal Entry
                                         </a>
                                     </div>
@@ -298,8 +264,6 @@ $menuManager = new MenuManager($auth);
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
     </div>
 
     <!-- Bootstrap JavaScript -->

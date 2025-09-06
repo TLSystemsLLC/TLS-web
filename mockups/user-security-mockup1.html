@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Security - Grouped Card Layout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .permission-card {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        .permission-card .card-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+        .permission-item {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .permission-item:last-child {
+            border-bottom: none;
+        }
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        .bulk-controls {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .stats-badge {
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        .search-highlight {
+            background-color: #fff3cd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-shield-lock me-2"></i>User Security Management</h2>
+                    <div>
+                        <button class="btn btn-success" id="saveBtn">
+                            <i class="bi bi-check-lg me-2"></i>Save Changes
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Selection and Search -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <label for="userSelect" class="form-label">Select User:</label>
+                        <select class="form-select" id="userSelect">
+                            <option value="">Choose a user...</option>
+                            <option value="tlyle" selected>Tony Lyle</option>
+                            <option value="jsmith">John Smith</option>
+                            <option value="mwilson">Mary Wilson</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="searchBox" class="form-label">Search Permissions:</label>
+                        <input type="text" class="form-control" id="searchBox" placeholder="Search menu items...">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Permission Summary:</label>
+                        <div class="d-flex align-items-center">
+                            <span class="badge bg-success me-2">45 Granted</span>
+                            <span class="badge bg-danger">12 Denied</span>
+                            <span class="badge bg-secondary ms-2">193 Total</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bulk Controls -->
+                <div class="bulk-controls">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Bulk Actions:</strong>
+                            <button class="btn btn-sm btn-outline-success ms-2">
+                                <i class="bi bi-check-all"></i> Grant All Visible
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger ms-1">
+                                <i class="bi bi-x-lg"></i> Deny All Visible
+                            </button>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <strong>Quick Roles:</strong>
+                            <button class="btn btn-sm btn-outline-primary ms-1">Dispatcher</button>
+                            <button class="btn btn-sm btn-outline-primary ms-1">Accountant</button>
+                            <button class="btn btn-sm btn-outline-primary ms-1">Manager</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Permission Cards Grid -->
+                <div class="row">
+                    <!-- Accounting Permissions -->
+                    <div class="col-lg-6">
+                        <div class="permission-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-calculator me-2"></i>
+                                    Accounting
+                                </div>
+                                <div>
+                                    <span class="stats-badge badge bg-success">12/15</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#accounting">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse show" id="accounting">
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Chart of Account Maintenance</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Account History</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Journal Entry</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Voucher Entry</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Vendor Maintenance</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Collections Work</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dispatch Permissions -->
+                    <div class="col-lg-6">
+                        <div class="permission-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-truck me-2"></i>
+                                    Dispatch
+                                </div>
+                                <div>
+                                    <span class="stats-badge badge bg-success">8/12</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#dispatch">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse show" id="dispatch">
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Load Entry</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Available EDI Loads</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Load Inquiry</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Daily Count</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Unit History</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Safety Permissions -->
+                    <div class="col-lg-6">
+                        <div class="permission-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-shield-check me-2"></i>
+                                    Safety
+                                </div>
+                                <div>
+                                    <span class="stats-badge badge bg-warning">5/8</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#safety">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse show" id="safety">
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Driver Maintenance</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Owner Maintenance</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Unit Maintenance</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payroll Permissions -->
+                    <div class="col-lg-6">
+                        <div class="permission-card">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-clock me-2"></i>
+                                    Payroll
+                                </div>
+                                <div>
+                                    <span class="stats-badge badge bg-danger">2/15</span>
+                                    <button class="btn btn-sm btn-outline-secondary ms-2" data-bs-toggle="collapse" data-bs-target="#payroll">
+                                        <i class="bi bi-chevron-down"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body collapse show" id="payroll">
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Unit Check Lookup</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" checked>
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Run Trial Settlements</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                                <div class="permission-item d-flex justify-content-between align-items-center">
+                                    <label class="form-check-label">Finalize Settlements</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Status -->
+                <div class="alert alert-info mt-4" style="display: none;" id="saveStatus">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Changes detected.</strong> Don't forget to save your permission changes.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Demo functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const checkboxes = document.querySelectorAll('.form-check-input');
+            const saveStatus = document.getElementById('saveStatus');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    saveStatus.style.display = 'block';
+                    updateStats();
+                });
+            });
+            
+            function updateStats() {
+                // Update permission counts (demo)
+                console.log('Stats updated');
+            }
+            
+            // Search functionality demo
+            const searchBox = document.getElementById('searchBox');
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const labels = document.querySelectorAll('.form-check-label');
+                
+                labels.forEach(label => {
+                    const text = label.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        label.classList.add('search-highlight');
+                        label.closest('.permission-item').style.display = 'flex';
+                    } else {
+                        label.classList.remove('search-highlight');
+                        if (searchTerm) {
+                            label.closest('.permission-item').style.display = 'none';
+                        } else {
+                            label.closest('.permission-item').style.display = 'flex';
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

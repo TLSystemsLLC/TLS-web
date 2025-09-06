@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Security - Tree View Layout</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .tree-container {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        
+        .tree-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .tree-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .tree-item.parent {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            font-weight: 600;
+            border-left: 4px solid #0d6efd;
+        }
+        
+        .tree-item.child {
+            padding-left: 2.5rem;
+            font-size: 0.9rem;
+        }
+        
+        .tree-item.grandchild {
+            padding-left: 4rem;
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .permission-toggle {
+            margin-left: auto;
+        }
+        
+        .expand-icon {
+            width: 20px;
+            text-align: center;
+            margin-right: 0.5rem;
+            transition: transform 0.2s ease;
+        }
+        
+        .expand-icon.expanded {
+            transform: rotate(90deg);
+        }
+        
+        .tree-children {
+            display: none;
+        }
+        
+        .tree-children.show {
+            display: block;
+        }
+        
+        .permission-summary {
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+        }
+        
+        .filter-badges {
+            margin-bottom: 1rem;
+        }
+        
+        .filter-badge {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .form-check-input:checked {
+            background-color: #198754;
+            border-color: #198754;
+        }
+        
+        .stats-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2><i class="bi bi-shield-lock me-2"></i>User Security Management</h2>
+                    <div>
+                        <button class="btn btn-success" id="saveBtn">
+                            <i class="bi bi-check-lg me-2"></i>Save Changes
+                        </button>
+                        <button class="btn btn-outline-secondary ms-2">
+                            <i class="bi bi-arrow-clockwise me-2"></i>Reset
+                        </button>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Left Panel - Controls -->
+                    <div class="col-lg-4">
+                        <!-- User Selection -->
+                        <div class="stats-panel">
+                            <h5 class="mb-3">
+                                <i class="bi bi-person-circle me-2"></i>User Selection
+                            </h5>
+                            <select class="form-select mb-3" id="userSelect">
+                                <option value="">Choose a user...</option>
+                                <option value="tlyle" selected>Tony Lyle</option>
+                                <option value="jsmith">John Smith</option>
+                                <option value="mwilson">Mary Wilson</option>
+                            </select>
+                            
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <h4 class="mb-0">45</h4>
+                                    <small>Granted</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="mb-0">12</h4>
+                                    <small>Denied</small>
+                                </div>
+                                <div class="col-4">
+                                    <h4 class="mb-0">193</h4>
+                                    <small>Total</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search and Filters -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-search me-2"></i>Search & Filter
+                                </h6>
+                                <input type="text" class="form-control mb-3" id="searchBox" placeholder="Search permissions...">
+                                
+                                <div class="filter-badges">
+                                    <span class="badge bg-primary filter-badge me-1 mb-1" data-filter="all">All</span>
+                                    <span class="badge bg-success filter-badge me-1 mb-1" data-filter="granted">Granted Only</span>
+                                    <span class="badge bg-danger filter-badge me-1 mb-1" data-filter="denied">Denied Only</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bulk Actions -->
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">
+                                    <i class="bi bi-lightning me-2"></i>Quick Actions
+                                </h6>
+                                <div class="d-grid gap-2">
+                                    <button class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-check-all me-2"></i>Grant All Visible
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-x-lg me-2"></i>Deny All Visible
+                                    </button>
+                                    <hr class="my-2">
+                                    <button class="btn btn-sm btn-outline-primary">Apply Dispatcher Role</button>
+                                    <button class="btn btn-sm btn-outline-primary">Apply Accountant Role</button>
+                                    <button class="btn btn-sm btn-outline-primary">Apply Manager Role</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel - Tree View -->
+                    <div class="col-lg-8">
+                        <div class="tree-container">
+                            <!-- Accounting Section -->
+                            <div class="tree-item parent" data-toggle="collapse" data-target="accounting-children">
+                                <div class="d-flex align-items-center">
+                                    <span class="expand-icon expanded">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                    <i class="bi bi-calculator me-2"></i>
+                                    <span>Accounting</span>
+                                    <span class="permission-summary badge bg-success ms-auto">12/15 granted</span>
+                                </div>
+                            </div>
+                            <div class="tree-children show" id="accounting-children">
+                                <!-- G/L Subsection -->
+                                <div class="tree-item child" data-toggle="collapse" data-target="gl-children">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon expanded">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </span>
+                                        <i class="bi bi-journal-text me-2"></i>
+                                        <span>General Ledger</span>
+                                        <span class="permission-summary badge bg-warning ms-auto">3/5 granted</span>
+                                    </div>
+                                </div>
+                                <div class="tree-children show" id="gl-children">
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Chart of Account Maintenance</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Account History</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Journal Entry</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Bank Reconciliation</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>GL Export</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- A/P Subsection -->
+                                <div class="tree-item child" data-toggle="collapse" data-target="ap-children">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </span>
+                                        <i class="bi bi-credit-card me-2"></i>
+                                        <span>Accounts Payable</span>
+                                        <span class="permission-summary badge bg-success ms-auto">5/5 granted</span>
+                                    </div>
+                                </div>
+                                <div class="tree-children" id="ap-children">
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Vendor Maintenance</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Voucher Entry</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dispatch Section -->
+                            <div class="tree-item parent" data-toggle="collapse" data-target="dispatch-children">
+                                <div class="d-flex align-items-center">
+                                    <span class="expand-icon">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                    <i class="bi bi-truck me-2"></i>
+                                    <span>Dispatch</span>
+                                    <span class="permission-summary badge bg-success ms-auto">8/12 granted</span>
+                                </div>
+                            </div>
+                            <div class="tree-children" id="dispatch-children">
+                                <div class="tree-item child">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon"></span>
+                                        <span>Load Entry</span>
+                                        <div class="form-check form-switch permission-toggle">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tree-item child">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon"></span>
+                                        <span>Available EDI Loads</span>
+                                        <div class="form-check form-switch permission-toggle">
+                                            <input class="form-check-input" type="checkbox" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="tree-item child">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon"></span>
+                                        <span>Load Inquiry</span>
+                                        <div class="form-check form-switch permission-toggle">
+                                            <input class="form-check-input" type="checkbox">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Payroll Section -->
+                            <div class="tree-item parent" data-toggle="collapse" data-target="payroll-children">
+                                <div class="d-flex align-items-center">
+                                    <span class="expand-icon">
+                                        <i class="bi bi-chevron-right"></i>
+                                    </span>
+                                    <i class="bi bi-clock me-2"></i>
+                                    <span>Payroll</span>
+                                    <span class="permission-summary badge bg-danger ms-auto">2/15 granted</span>
+                                </div>
+                            </div>
+                            <div class="tree-children" id="payroll-children">
+                                <div class="tree-item child" data-toggle="collapse" data-target="unit-settlements-children">
+                                    <div class="d-flex align-items-center">
+                                        <span class="expand-icon">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </span>
+                                        <span>Unit Settlements</span>
+                                        <span class="permission-summary badge bg-warning ms-auto">1/5 granted</span>
+                                    </div>
+                                </div>
+                                <div class="tree-children" id="unit-settlements-children">
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Unit Check Lookup</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox" checked>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tree-item grandchild">
+                                        <div class="d-flex align-items-center">
+                                            <span class="expand-icon"></span>
+                                            <span>Run Trial Settlements</span>
+                                            <div class="form-check form-switch permission-toggle">
+                                                <input class="form-check-input" type="checkbox">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Tree view functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle tree sections
+            document.querySelectorAll('[data-toggle="collapse"]').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const target = document.getElementById(targetId);
+                    const icon = this.querySelector('.expand-icon i');
+                    
+                    if (target.classList.contains('show')) {
+                        target.classList.remove('show');
+                        this.querySelector('.expand-icon').classList.remove('expanded');
+                    } else {
+                        target.classList.add('show');
+                        this.querySelector('.expand-icon').classList.add('expanded');
+                    }
+                });
+            });
+            
+            // Filter functionality
+            document.querySelectorAll('.filter-badge').forEach(badge => {
+                badge.addEventListener('click', function() {
+                    const filter = this.getAttribute('data-filter');
+                    
+                    // Update active state
+                    document.querySelectorAll('.filter-badge').forEach(b => b.classList.remove('bg-primary'));
+                    document.querySelectorAll('.filter-badge').forEach(b => b.classList.add('bg-secondary'));
+                    this.classList.remove('bg-secondary');
+                    this.classList.add('bg-primary');
+                    
+                    // Apply filter (demo)
+                    console.log('Filtering by:', filter);
+                });
+            });
+            
+            // Search functionality
+            const searchBox = document.getElementById('searchBox');
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                console.log('Searching for:', searchTerm);
+                // Add actual search logic here
+            });
+        });
+    </script>
+</body>
+</html>

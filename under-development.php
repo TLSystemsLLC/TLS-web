@@ -13,7 +13,7 @@ $auth = new Auth(
 );
 
 // Require authentication
-$auth->requireAuth('/login.php');
+$auth->requireAuth('/tls/login.php');
 
 // Get current user
 $user = $auth->getCurrentUser();
@@ -104,7 +104,7 @@ $menuName = htmlspecialchars($menuName);
                 <!-- Breadcrumb -->
                 <nav aria-label="breadcrumb" class="mb-4">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="/dashboard.php">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="/tls/dashboard.php">Dashboard</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Under Development</li>
                     </ol>
                 </nav>
@@ -117,12 +117,12 @@ $menuName = htmlspecialchars($menuName);
                             <h1 class="display-6 mb-3">Feature Under Development</h1>
                             <h4 class="mb-3"><?= $menuName ?></h4>
                             <p class="lead mb-4">
-                                This feature is currently being converted from the VB6 application. 
-                                We're working hard to bring you the same functionality with a modern, 
+                                This feature is currently under development. 
+                                We're working hard to bring you enhanced functionality with a modern, 
                                 user-friendly interface.
                             </p>
                             <div class="d-flex justify-content-center gap-3">
-                                <a href="/dashboard.php" class="btn btn-light btn-lg">
+                                <a href="/tls/dashboard.php" class="btn btn-light btn-lg">
                                     <i class="bi bi-house-door me-2"></i>Return to Dashboard
                                 </a>
                                 <button type="button" class="btn btn-outline-light btn-lg" onclick="history.back()">
@@ -180,23 +180,23 @@ $menuName = htmlspecialchars($menuName);
                                 <ul class="list-unstyled mb-0">
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-warning me-2"></i>
-                                        Load Entry and Management
+                                        Core Business Functions
                                     </li>
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-warning me-2"></i>
-                                        Dispatch Operations
+                                        Advanced Reporting
                                     </li>
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-warning me-2"></i>
-                                        Accounting Modules
+                                        Enhanced User Interface
                                     </li>
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-warning me-2"></i>
-                                        Reporting System
+                                        Mobile Optimization
                                     </li>
                                     <li class="mb-2">
                                         <i class="bi bi-clock text-warning me-2"></i>
-                                        Driver/Owner Management
+                                        Workflow Improvements
                                     </li>
                                 </ul>
                             </div>
@@ -211,7 +211,7 @@ $menuName = htmlspecialchars($menuName);
                             <i class="bi bi-info-circle me-2"></i>
                             <strong>Need this feature urgently?</strong> 
                             Please contact your system administrator to discuss prioritization of specific features.
-                            This web application maintains the same database structure and stored procedures as the original VB6 application.
+                            All functionality will maintain full compatibility with your existing business processes.
                         </div>
                     </div>
                 </div>

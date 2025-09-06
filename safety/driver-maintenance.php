@@ -186,13 +186,10 @@ $menuManager = new MenuManager($auth);
                     </div>
                 </div>
 
-                <!-- Save Indicator -->
+                <!-- Save Indicator Banner -->
                 <div class="tls-save-indicator" id="tls-save-indicator" style="display: none;">
-                    <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        You have unsaved changes. Remember to save before navigating away.
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    You have <span id="tls-change-counter-text">0</span> unsaved changes. Remember to save before navigating away.
                 </div>
                 
                 <?php if ($message): ?>
@@ -210,12 +207,22 @@ $menuManager = new MenuManager($auth);
                     <div class="card-body">
                         <form method="POST" id="searchForm">
                             <input type="hidden" name="action" value="search">
+                            <!-- Row 1: Label and empty space for button -->
                             <div class="row">
-                                <div class="col-md-6">
+                                <div class="col-md-8">
                                     <label for="driver_search" class="form-label">Search Driver:</label>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty space above button -->
+                                </div>
+                            </div>
+                            
+                            <!-- Row 2: Search input and Load Driver button -->
+                            <div class="row">
+                                <div class="col-md-8">
                                     <div class="position-relative">
                                         <input type="text" class="form-control" id="driver_search" 
-                                               placeholder="Type driver name or ID...">
+                                               placeholder="Type driver name or DriverKey...">
                                         <div id="search-spinner" class="position-absolute top-50 end-0 translate-middle-y me-3" style="display: none;">
                                             <div class="spinner-border spinner-border-sm text-primary" role="status">
                                                 <span class="visually-hidden">Searching...</span>
@@ -223,20 +230,29 @@ $menuManager = new MenuManager($auth);
                                         </div>
                                     </div>
                                     <input type="hidden" id="driver_key" name="driver_key">
-                                    <div id="search-status" class="form-text text-muted mt-1">Type at least 2 characters to search</div>
                                 </div>
-                                <div class="col-md-6 d-flex align-items-end">
-                                    <div class="me-3">
+                                <div class="col-md-4 d-flex align-items-start">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi-search"></i> Load Driver
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Row 3: Status text with checkbox on same row -->
+                            <div class="row mt-1">
+                                <div class="col-md-8">
+                                    <div class="d-flex justify-content-between">
+                                        <div id="search-status" class="form-text text-muted">Type driver name or enter DriverKey directly</div>
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="include_inactive" name="include_inactive">
-                                            <label class="form-check-label" for="include_inactive">
+                                            <label class="form-check-label form-text text-muted" for="include_inactive">
                                                 Include Inactive Drivers
                                             </label>
                                         </div>
                                     </div>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="bi-search"></i> Load Driver
-                                    </button>
+                                </div>
+                                <div class="col-md-4">
+                                    <!-- Empty space to match button column -->
                                 </div>
                             </div>
                         </form>
@@ -661,17 +677,24 @@ $menuManager = new MenuManager($auth);
             console.log('DOM loaded, initializing autocomplete fields...');
             
             // Driver search autocomplete
+            const driverKeyField = document.getElementById('driver_key');
+            const driverSearchField = document.getElementById('driver_search');
+            
+            // Initialize autocomplete for name searches
             const driverAutocomplete = new TLSAutocomplete(
-                document.getElementById('driver_search'),
-                document.getElementById('driver_key'),
+                driverSearchField,
+                driverKeyField,
                 'drivers',
                 function(driver) {
                     console.log('Driver selected:', driver);
-                    console.log('Hidden field value set to:', document.getElementById('driver_key').value);
-                    // Submit the search form automatically when driver is selected
+                    console.log('Driver key set to:', driverKeyField.value);
+                    // Auto-submit the form when driver is selected from dropdown
                     document.getElementById('searchForm').submit();
                 }
             );
+            
+            // Let autocomplete handle all input - both names and DriverKeys
+            // The API now searches by DriverKey as well as names
             
             // Re-trigger search when include_inactive checkbox changes
             document.getElementById('include_inactive')?.addEventListener('change', function() {

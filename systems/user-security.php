@@ -526,13 +526,10 @@ try {
         </div>
     </div>
 
-    <!-- Save indicator -->
+    <!-- Save Indicator Banner -->
     <div class="tls-save-indicator" id="saveIndicator" style="display: none;">
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>
-            <strong>Unsaved Changes</strong> Don't forget to save!
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        You have unsaved permission changes. Remember to save before navigating away.
     </div>
 
     <!-- Bootstrap JavaScript -->

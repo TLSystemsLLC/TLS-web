@@ -45,7 +45,7 @@ class Database
             $this->database = $database;
             
             $dsn = sprintf(
-                'sqlsrv:Server=%s,%d;Database=%s;TrustServerCertificate=1',
+                'sqlsrv:Server=%s,%d;Database=%s',
                 $this->server,
                 $this->port,
                 $database
@@ -54,8 +54,6 @@ class Database
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-                PDO::ATTR_TIMEOUT => 30,
-                PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 60,
                 PDO::ATTR_EMULATE_PREPARES => false
             ];
             
@@ -163,7 +161,22 @@ class Database
         try {
             $stmt = $this->connection->prepare($sql);
             $stmt->execute($parameters);
-            return $stmt->fetchAll();
+            
+            // For multi-statement queries with OUTPUT parameters, we need to get the last result set
+            $results = [];
+            do {
+                try {
+                    $data = $stmt->fetchAll();
+                    if (!empty($data)) {
+                        $results = $data; // Keep the last non-empty result set
+                    }
+                } catch (PDOException $e) {
+                    // Some result sets may not have fields (like EXEC statements)
+                    // Continue to next result set
+                }
+            } while ($stmt->nextRowset());
+            
+            return $results;
             
         } catch (PDOException $e) {
             $this->logError('Query execution failed', $e);

@@ -272,31 +272,60 @@ function lookupDrivers(Database $db, string $query, int $limit, bool $includeIna
         "" : // No filter - include all drivers
         "AND EndDate = '1899-12-30 00:00:00.000'"; // Only active drivers (no end date)
     
-    // Search drivers by name or driver ID
-    $sql = "SELECT TOP $limit 
-                DriverKey,
-                DriverID,
-                FirstName,
-                MiddleName,
-                LastName,
-                Email,
-                Active,
-                DriverType,
-                EndDate,
-                PhysicalExpires,
-                LicenseExpires,
-                ISNULL(FirstName, '') + ' ' + ISNULL(MiddleName + ' ', '') + ISNULL(LastName, '') as FullName
-            FROM tDriver 
-            WHERE (FirstName LIKE ? 
-                OR LastName LIKE ?
-                OR DriverID LIKE ?
-                OR (FirstName + ' ' + LastName) LIKE ?)
-                $dateFilter
-            ORDER BY LastName, FirstName";
+    // Check if query is purely numeric (DriverKey search)
+    $isNumeric = ctype_digit($query);
     
-    $searchTerm = '%' . $query . '%';
-    error_log("Driver search query: $sql with searchTerm: $searchTerm, includeInactive: " . ($includeInactive ? 'true' : 'false'));
-    $results = $db->query($sql, [$searchTerm, $searchTerm, $searchTerm, $searchTerm]);
+    if ($isNumeric) {
+        // Exact DriverKey search
+        $sql = "SELECT TOP $limit 
+                    DriverKey,
+                    DriverID,
+                    FirstName,
+                    MiddleName,
+                    LastName,
+                    Email,
+                    Active,
+                    DriverType,
+                    EndDate,
+                    PhysicalExpires,
+                    LicenseExpires,
+                    ISNULL(FirstName, '') + ' ' + ISNULL(MiddleName + ' ', '') + ISNULL(LastName, '') as FullName
+                FROM tDriver 
+                WHERE DriverKey = ?
+                    $dateFilter
+                ORDER BY LastName, FirstName";
+        
+        $searchParam = [(int)$query];
+        error_log("Driver exact search query: $sql with DriverKey: $query, includeInactive: " . ($includeInactive ? 'true' : 'false'));
+        error_log("Searching for exact DriverKey match: " . $query);
+    } else {
+        // Text search (names only - NO DriverID for PII protection)
+        $sql = "SELECT TOP $limit 
+                    DriverKey,
+                    DriverID,
+                    FirstName,
+                    MiddleName,
+                    LastName,
+                    Email,
+                    Active,
+                    DriverType,
+                    EndDate,
+                    PhysicalExpires,
+                    LicenseExpires,
+                    ISNULL(FirstName, '') + ' ' + ISNULL(MiddleName + ' ', '') + ISNULL(LastName, '') as FullName
+                FROM tDriver 
+                WHERE (FirstName LIKE ? 
+                    OR LastName LIKE ?
+                    OR (FirstName + ' ' + LastName) LIKE ?)
+                    $dateFilter
+                ORDER BY LastName, FirstName";
+        
+        $searchTerm = '%' . $query . '%';
+        $searchParam = [$searchTerm, $searchTerm, $searchTerm];
+        error_log("Driver text search query: $sql with searchTerm: $searchTerm, includeInactive: " . ($includeInactive ? 'true' : 'false'));
+    }
+    
+    $results = $db->query($sql, $searchParam);
     error_log("Driver search returned " . count($results) . " results");
     
     return array_map(function($row) {

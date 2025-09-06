@@ -100,6 +100,10 @@ class Config
     }
 }
 
+// Set timezone first before loading any other configuration
+ini_set('date.timezone', 'America/Chicago');
+date_default_timezone_set('America/Chicago'); // Central Time Zone
+
 // Load configuration on include
 try {
     Config::load();
@@ -112,4 +116,9 @@ try {
     Config::set('DB_PORT', '1433');
     Config::set('APP_NAME', 'TLS Operations');
     Config::set('APP_DEBUG', 'true');
+    Config::set('APP_TIMEZONE', 'America/Chicago'); // Central Time Zone
 }
+
+// Ensure timezone is set correctly
+$timezone = Config::get('APP_TIMEZONE', 'America/Chicago');
+date_default_timezone_set($timezone);

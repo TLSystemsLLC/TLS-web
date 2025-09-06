@@ -13,7 +13,7 @@ $auth = new Auth(
 
 // If already logged in, redirect to dashboard
 if ($auth->isLoggedIn()) {
-    header('Location: /dashboard.php');
+    header('Location: /tls/dashboard.php');
     exit;
 }
 
@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $result = $auth->login($customer, $userId, $password);
         
         if ($result['success']) {
-            header('Location: /dashboard.php');
+            header('Location: /tls/dashboard.php');
             exit;
         } else {
             $error = $result['message'];
@@ -163,7 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <form method="POST" action="login.php" novalidate>
             <div class="mb-3">
                 <label for="customer" class="form-label">
-                    <i class="bi bi-building me-2"></i>Customer
+                    <i class="bi bi-building me-2"></i>Customer ID
                 </label>
                 <input 
                     type="text" 
@@ -173,7 +173,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     value="<?= htmlspecialchars($_POST['customer'] ?? '') ?>"
                     required 
                     autofocus
-                    placeholder="Enter customer database name"
+                    placeholder="Enter your customer ID"
                 >
             </div>
             
@@ -213,7 +213,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
         
         <div class="footer-text">
-            <p>&copy; <?= date('Y') ?> TLS Operations. All rights reserved.</p>
+            <p>&copy; <?= date('Y') ?> TL Systems, LLC. All rights reserved.</p>
         </div>
     </div>
 

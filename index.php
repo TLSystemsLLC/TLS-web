@@ -13,9 +13,9 @@ $auth = new Auth(
 
 // Check if user is already logged in
 if ($auth->isLoggedIn()) {
-    header('Location: /dashboard.php');
+    header('Location: /tls/dashboard.php');
     exit;
 } else {
-    header('Location: /login.php');
+    header('Location: /tls/login.php');
     exit;
 }

@@ -15,5 +15,5 @@ $auth = new Auth(
 $auth->logout();
 
 // Redirect to login page
-header('Location: /login.php');
+header('Location: /tls/login.php');
 exit;

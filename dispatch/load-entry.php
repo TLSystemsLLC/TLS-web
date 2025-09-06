@@ -311,30 +311,33 @@ if ($loadKey) {
             font-size: 0.875rem;
         }
     </style>
+    <script src="/tls/js/tls-form-tracker.js"></script>
 </head>
 <body>
-    <div class="container-fluid">
-        <?php echo $menuManager->generateMainMenu(); ?>
-        
-        <div class="main-content">
-            <div class="row mb-4">
-                <div class="col">
-                    <h2><i class="bi bi-truck"></i> Load Entry</h2>
-                </div>
-                <div class="col-auto">
-                    <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="newLoad()">
-                            <i class="bi bi-plus-circle"></i> New
+    <?php echo $menuManager->generateMainMenu(); ?>
+    
+    <div class="container-fluid mt-3">
+        <div class="row">
+            <div class="col-12">
+                <!-- Standardized Page Header -->
+                <div class="tls-page-header">
+                    <h2 class="tls-page-title"><i class="bi bi-truck me-2"></i>Load Entry</h2>
+                    <div class="tls-top-actions">
+                        <button type="button" class="btn tls-btn-primary" id="tls-save-btn" form="loadForm">
+                            <i class="bi bi-check-circle me-1"></i> Save Load
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="searchLoad()">
-                            <i class="bi bi-search"></i> Search
+                        <button type="button" class="btn tls-btn-secondary" onclick="newLoad()">
+                            <i class="bi bi-plus-circle me-1"></i> New
                         </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="deleteLoad()" <?php echo $loadKey ? '' : 'disabled'; ?>>
-                            <i class="bi bi-trash"></i> Delete
+                        <button type="button" class="btn tls-btn-secondary" onclick="searchLoad()">
+                            <i class="bi bi-search me-1"></i> Search
                         </button>
+                        <button type="button" class="btn tls-btn-warning" onclick="deleteLoad()" <?php echo $loadKey ? '' : 'disabled'; ?>>
+                            <i class="bi bi-trash me-1"></i> Delete
+                        </button>
+                        <span class="tls-change-counter" id="tls-change-counter" style="display: none;">0</span>
                     </div>
                 </div>
-            </div>
 
             <?php if ($errorMessage): ?>
                 <div class="alert alert-danger" role="alert">
@@ -357,7 +360,7 @@ if ($loadKey) {
                     <!-- Left Column - Independent Cards -->
                     <div class="flex-shrink-0" style="width: 48%; margin-right: 2%;">
                         <!-- Tender Information - First Priority -->
-                        <div class="card mb-3">
+                        <div class="tls-form-card">
                             <div class="card-header">
                                 <h5><i class="bi bi-building"></i> Tender Information</h5>
                             </div>
@@ -420,7 +423,7 @@ if ($loadKey) {
                         </div>
                         
                         <!-- Customer Information -->
-                        <div class="card mb-3">
+                        <div class="tls-form-card">
                             <div class="card-header">
                                 <h5><i class="bi bi-person-lines-fill"></i> Customer Information</h5>
                             </div>
@@ -451,7 +454,7 @@ if ($loadKey) {
                         </div>
                         
                         <!-- Load Information -->
-                        <div class="card mb-3">
+                        <div class="tls-form-card">
                             <div class="card-header">
                                 <h5><i class="bi bi-info-circle"></i> Load Information</h5>
                             </div>
@@ -553,7 +556,7 @@ if ($loadKey) {
                     <!-- Right Column - Independent Cards -->
                     <div class="flex-shrink-0" style="width: 50%;">
                         <!-- Stops -->
-                        <div class="card mb-3">
+                        <div class="tls-form-card">
                             <div class="card-header d-flex justify-content-between align-items-center">
                                 <h5><i class="bi bi-geo-alt"></i> Stops</h5>
                                 <div>
@@ -740,7 +743,7 @@ if ($loadKey) {
                         </div>
                         
                         <!-- Load Details -->
-                        <div class="card mb-3">
+                        <div class="tls-form-card">
                             <div class="card-header">
                                 <h5><i class="bi bi-geo-alt"></i> Load Details</h5>
                             </div>
@@ -998,6 +1001,7 @@ if ($loadKey) {
                     </div>
                 </div>
             </form>
+            </div>
         </div>
     </div>
 
@@ -1764,6 +1768,26 @@ if ($loadKey) {
         document.getElementById('loadForm').addEventListener('submit', function(e) {
             updateStopsData();
         });
+
+        // Initialize TLS Form Tracker for change detection
+        const formTracker = new TLSFormTracker({
+            formSelector: '#loadForm',
+            saveButtonId: 'tls-save-btn',
+            changeCounterId: 'tls-change-counter',
+            excludeFields: ['action', 'load_key', 'stops_data'],
+            onSave: function(changes) {
+                console.log('Form changes detected:', changes);
+                updateStopsData();
+                document.getElementById('loadForm').submit();
+            },
+            confirmMessage: 'You have unsaved changes to this load. Are you sure you want to leave?'
+        });
     </script>
+
+    <!-- Save Indicator Banner -->
+    <div class="tls-save-indicator" id="tls-save-indicator" style="display: none;">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        You have <span id="tls-change-counter-text">0</span> unsaved changes. Remember to save before navigating away.
+    </div>
 </body>
 </html>

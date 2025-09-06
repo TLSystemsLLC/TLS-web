@@ -48,11 +48,11 @@ class Auth
                 ];
             }
 
-            // Validate customer database name (basic security check)
-            if (!$this->isValidDatabaseName($customer)) {
+            // Validate customer ID against master database
+            if (!$this->isValidCustomerId($customer)) {
                 return [
                     'success' => false,
-                    'message' => 'Invalid customer database specified'
+                    'message' => 'Invalid customer ID specified'
                 ];
             }
 
@@ -66,14 +66,18 @@ class Auth
             ]);
 
             if ($returnCode === 0) {
-                // Login successful - get user menus
+                // Login successful - get user menus, details, and company info
                 $menus = $this->getUserMenus($userId);
+                $userDetails = $this->getUserDetails($userId);
+                $companyInfo = $this->getCompanyInfo();
                 
                 // Create user session
                 $this->session->start();
                 $this->session->set('user_id', $userId);
                 $this->session->set('customer_db', $customer);
                 $this->session->set('user_menus', $menus);
+                $this->session->set('user_details', $userDetails);
+                $this->session->set('company_info', $companyInfo);
                 $this->session->set('login_time', time());
                 
                 // Log successful login
@@ -84,7 +88,8 @@ class Auth
                     'message' => 'Login successful',
                     'user_id' => $userId,
                     'customer' => $customer,
-                    'menus' => $menus
+                    'menus' => $menus,
+                    'user_details' => $userDetails
                 ];
             } else {
                 // Login failed
@@ -126,13 +131,63 @@ class Auth
             
             $menus = [];
             foreach ($results as $row) {
-                $menus[] = $row['MenuName'];
+                $menus[] = trim($row['MenuName']); // Trim whitespace from menu names
             }
             
             return $menus;
             
         } catch (Exception $e) {
             error_log("Error getting user menus for '{$userId}': " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get user details from spUser_GetUser
+     * 
+     * @param string $userId User ID
+     * @return array User details including UserName (display name)
+     */
+    private function getUserDetails(string $userId): array
+    {
+        try {
+            // spUser_GetUser uses OUTPUT parameters, not a result set
+            $sql = "DECLARE @TeamKey INT, @UserName VARCHAR(35), @PasswordChanged DATETIME, @Extension INT, @Email VARCHAR(50); " .
+                   "EXEC spUser_GetUser ?, @TeamKey OUTPUT, @UserName OUTPUT, @PasswordChanged OUTPUT, @Extension OUTPUT, @Email OUTPUT; " .
+                   "SELECT @TeamKey as TeamKey, @UserName as UserName, @PasswordChanged as PasswordChanged, @Extension as Extension, @Email as Email";
+            
+            $results = $this->db->query($sql, [$userId]);
+            
+            if (!empty($results)) {
+                return $results[0]; // Return first row with user details
+            }
+            
+            return [];
+            
+        } catch (Exception $e) {
+            error_log("Error getting user details for '{$userId}': " . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Get company information using spCompany_Get
+     * 
+     * @return array Company details
+     */
+    private function getCompanyInfo(): array
+    {
+        try {
+            $results = $this->db->executeStoredProcedure('spCompany_Get', [1]);
+            
+            if (!empty($results)) {
+                return $results[0]; // Return first row with company details
+            }
+            
+            return [];
+            
+        } catch (Exception $e) {
+            error_log("Error getting company info: " . $e->getMessage());
             return [];
         }
     }
@@ -205,11 +260,18 @@ class Auth
             return null;
         }
 
+        $userDetails = $this->session->get('user_details', []);
+        $companyInfo = $this->session->get('company_info', []);
+        
         return [
             'user_id' => $this->session->get('user_id'),
             'customer_db' => $this->session->get('customer_db'),
             'menus' => $this->session->get('user_menus', []),
-            'login_time' => $this->session->get('login_time')
+            'login_time' => $this->session->get('login_time'),
+            'user_name' => $userDetails['UserName'] ?? $this->session->get('user_id'), // Use UserName from spUser_GetUser or fallback to user_id
+            'user_details' => $userDetails,
+            'company_info' => $companyInfo,
+            'company_name' => $companyInfo['CompanyName'] ?? $this->session->get('customer_db') // Use CompanyName or fallback to customer_db
         ];
     }
 
@@ -227,15 +289,45 @@ class Auth
     }
 
     /**
-     * Validate database name for security
+     * Validate customer ID against master database operations list
      * 
-     * @param string $dbName Database name
-     * @return bool True if valid
+     * @param string $customerId Customer ID
+     * @return bool True if valid customer ID
      */
-    private function isValidDatabaseName(string $dbName): bool
+    private function isValidCustomerId(string $customerId): bool
     {
-        // Basic validation - alphanumeric, underscore, hyphen only
-        return preg_match('/^[a-zA-Z0-9_-]+$/', $dbName) === 1;
+        // Basic validation first - alphanumeric, underscore, hyphen only
+        if (preg_match('/^[a-zA-Z0-9_-]+$/', $customerId) !== 1) {
+            return false;
+        }
+
+        try {
+            // Create separate database connection for validation
+            $masterDb = new Database(
+                Config::get('DB_SERVER'),
+                Config::get('DB_USERNAME'),
+                Config::get('DB_PASSWORD')
+            );
+            $masterDb->connect('master');
+            
+            // Get valid operations databases
+            $validDatabases = $masterDb->executeStoredProcedure('spGetOperationsDB', []);
+            
+            $masterDb->disconnect();
+            
+            // Check if customer ID is in the valid list
+            foreach ($validDatabases as $db) {
+                if (strtoupper($db['name']) === strtoupper($customerId)) {
+                    return true;
+                }
+            }
+            
+            return false;
+            
+        } catch (Exception $e) {
+            error_log("Customer ID validation error: " . $e->getMessage());
+            return false;
+        }
     }
 
     /**
@@ -243,7 +335,7 @@ class Auth
      * 
      * @param string $redirectUrl URL to redirect to for login
      */
-    public function requireAuth(string $redirectUrl = '/login.php'): void
+    public function requireAuth(string $redirectUrl = '/tls/login.php'): void
     {
         if (!$this->isLoggedIn()) {
             header("Location: {$redirectUrl}");
