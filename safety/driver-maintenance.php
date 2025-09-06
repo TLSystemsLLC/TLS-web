@@ -91,21 +91,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             isset($_POST['twic']) ? 1 : 0,
                             isset($_POST['coil_cert']) ? 1 : 0,
                             intval($_POST['company_id'] ?? 3),
-                            $_POST['arcnc'] ?? null,
-                            $_POST['txcnc'] ?? null,
+                            isset($_POST['arcnc']) ? 1 : 0,
+                            isset($_POST['txcnc']) ? 1 : 0,
                             isset($_POST['company_driver']) ? 1 : 0,
                             isset($_POST['eobr']) ? 1 : 0,
                             $_POST['eobr_start'] ?? null,
                             floatval($_POST['weekly_cash'] ?? 0.00),
                             isset($_POST['card_exception']) ? 1 : 0,
-                            $_POST['driver_spec'] ?? 'OTH',
+                            $_POST['driver_spec'] ?? '',
                             isset($_POST['medical_verification']) ? 1 : 0,
                             $_POST['mvr_due'] ?? null,
                             floatval($_POST['company_loaded_pay'] ?? 0.00),
                             floatval($_POST['company_empty_pay'] ?? 0.00),
-                            $_POST['pay_type'] ?? 'P',
+                            $_POST['pay_type'] ?? '',
                             floatval($_POST['company_tarp_pay'] ?? 0.00),
-                            floatval($_POST['company_stop_pay'] ?? 0.00)
+                            floatval($_POST['company_stop_pay'] ?? 0.00),
+                            // New contact information fields
+                            $_POST['name1'] ?? '',
+                            $_POST['name2'] ?? '',
+                            $_POST['address1'] ?? '',
+                            $_POST['address2'] ?? '',
+                            $_POST['address3'] ?? '',
+                            $_POST['address4'] ?? '',
+                            $_POST['city'] ?? '',
+                            $_POST['state'] ?? '',
+                            $_POST['zip'] ?? '',
+                            $_POST['county'] ?? ''
                         ];
                         
                         $result = $db->executeStoredProcedure('spDriver_Save', $params);
@@ -297,6 +308,77 @@ $menuManager = new MenuManager($auth);
                                            maxlength="15" required>
                                 </div>
                             </div>
+                            
+                            <!-- Contact Information -->
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="name1" class="form-label">Name1:</label>
+                                    <input type="text" class="form-control" id="name1" name="name1" 
+                                           value="<?php echo htmlspecialchars($driver['Name1'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="name2" class="form-label">Name2:</label>
+                                    <input type="text" class="form-control" id="name2" name="name2" 
+                                           value="<?php echo htmlspecialchars($driver['Name2'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="address1" class="form-label">Address 1:</label>
+                                    <input type="text" class="form-control" id="address1" name="address1" 
+                                           value="<?php echo htmlspecialchars($driver['Address1'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="address2" class="form-label">Address 2:</label>
+                                    <input type="text" class="form-control" id="address2" name="address2" 
+                                           value="<?php echo htmlspecialchars($driver['Address2'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="address3" class="form-label">Address 3:</label>
+                                    <input type="text" class="form-control" id="address3" name="address3" 
+                                           value="<?php echo htmlspecialchars($driver['Address3'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="address4" class="form-label">Address 4:</label>
+                                    <input type="text" class="form-control" id="address4" name="address4" 
+                                           value="<?php echo htmlspecialchars($driver['Address4'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <label for="city" class="form-label">City:</label>
+                                    <input type="text" class="form-control" id="city" name="city" 
+                                           value="<?php echo htmlspecialchars($driver['City'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                                <div class="col-md-2">
+                                    <label for="state" class="form-label">State:</label>
+                                    <input type="text" class="form-control" id="state" name="state" 
+                                           value="<?php echo htmlspecialchars($driver['State'] ?? ''); ?>" 
+                                           maxlength="2" style="text-transform: uppercase;">
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="zip" class="form-label">ZIP Code:</label>
+                                    <input type="text" class="form-control" id="zip" name="zip" 
+                                           value="<?php echo htmlspecialchars($driver['Zip'] ?? ''); ?>" 
+                                           maxlength="10">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="county" class="form-label">County:</label>
+                                    <input type="text" class="form-control" id="county" name="county" 
+                                           value="<?php echo htmlspecialchars($driver['County'] ?? ''); ?>" 
+                                           maxlength="30">
+                                </div>
+                            </div>
+                            
                             <div class="row mt-3">
                                 <div class="col-md-3">
                                     <label for="birth_date" class="form-label">Birth Date:</label>
@@ -395,6 +477,43 @@ $menuManager = new MenuManager($auth);
                                     </div>
                                 </div>
                             </div>
+                            
+                            <!-- Compliance Information -->
+                            <div class="row mt-3">
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="eobr" name="eobr" 
+                                               <?php echo ($driver['EOBR'] ?? false) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="eobr">EOBR</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="eobr_start" class="form-label">EOBR Start:</label>
+                                    <input type="date" class="form-control" id="eobr_start" name="eobr_start" 
+                                           value="<?php echo $driver['EOBRStart'] ? date('Y-m-d', strtotime($driver['EOBRStart'])) : ''; ?>">
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="card_exception" name="card_exception" 
+                                               <?php echo ($driver['CardException'] ?? false) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="card_exception">Card Exception</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="arcnc" name="arcnc" 
+                                               <?php echo ($driver['ARCNC'] ?? false) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="arcnc">ARCNC</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="txcnc" name="txcnc" 
+                                               <?php echo ($driver['TXCNC'] ?? false) ? 'checked' : ''; ?>>
+                                        <label class="form-check-label" for="txcnc">TXCNC</label>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -426,6 +545,90 @@ $menuManager = new MenuManager($auth);
                                         <input class="form-check-input" type="checkbox" id="company_driver" name="company_driver" 
                                                <?php echo ($driver['CompanyDriver'] ?? false) ? 'checked' : ''; ?>>
                                         <label class="form-check-label" for="company_driver">Company Driver</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Equipment and Route Information -->
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <label for="favorite_route" class="form-label">Favorite Route:</label>
+                                    <input type="text" class="form-control" id="favorite_route" name="favorite_route" 
+                                           value="<?php echo htmlspecialchars($driver['FavoriteRoute'] ?? ''); ?>" 
+                                           maxlength="50">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="driver_spec" class="form-label">Driver Specification:</label>
+                                    <input type="text" class="form-control" id="driver_spec" name="driver_spec" 
+                                           value="<?php echo htmlspecialchars($driver['DriverSpec'] ?? ''); ?>" 
+                                           maxlength="50">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pay Information -->
+                    <div class="tls-form-card">
+                        <div class="card-header">
+                            <i class="bi-cash"></i>Pay Information
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <label for="pay_type" class="form-label">Pay Type:</label>
+                                    <select class="form-select" id="pay_type" name="pay_type">
+                                        <option value="" <?php echo empty($driver['PayType']) ? 'selected' : ''; ?>>Select Pay Type</option>
+                                        <option value="M" <?php echo ($driver['PayType'] ?? '') === 'M' ? 'selected' : ''; ?>>Mileage</option>
+                                        <option value="P" <?php echo ($driver['PayType'] ?? '') === 'P' ? 'selected' : ''; ?>>Percentage</option>
+                                        <option value="S" <?php echo ($driver['PayType'] ?? '') === 'S' ? 'selected' : ''; ?>>Salary</option>
+                                        <option value="W" <?php echo ($driver['PayType'] ?? '') === 'W' ? 'selected' : ''; ?>>Weekly</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="weekly_cash" class="form-label">Weekly Cash:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="weekly_cash" name="weekly_cash" 
+                                               value="<?php echo htmlspecialchars($driver['WeeklyCash'] ?? ''); ?>" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="company_loaded_pay" class="form-label">Company Loaded Pay:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="company_loaded_pay" name="company_loaded_pay" 
+                                               value="<?php echo htmlspecialchars($driver['CompanyLoadedPay'] ?? ''); ?>" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="company_empty_pay" class="form-label">Company Empty Pay:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="company_empty_pay" name="company_empty_pay" 
+                                               value="<?php echo htmlspecialchars($driver['CompanyEmptyPay'] ?? ''); ?>" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row mt-3">
+                                <div class="col-md-3">
+                                    <label for="company_tarp_pay" class="form-label">Company Tarp Pay:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="company_tarp_pay" name="company_tarp_pay" 
+                                               value="<?php echo htmlspecialchars($driver['CompanyTarpPay'] ?? ''); ?>" 
+                                               step="0.01" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <label for="company_stop_pay" class="form-label">Company Stop Pay:</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" class="form-control" id="company_stop_pay" name="company_stop_pay" 
+                                               value="<?php echo htmlspecialchars($driver['CompanyStopPay'] ?? ''); ?>" 
+                                               step="0.01" min="0">
                                     </div>
                                 </div>
                             </div>
