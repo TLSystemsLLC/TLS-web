@@ -28,9 +28,12 @@ class Session
         if (session_status() === PHP_SESSION_NONE) {
             // Secure session configuration
             ini_set('session.cookie_httponly', '1');
-            ini_set('session.cookie_secure', '1');
+            // Only require secure cookies on HTTPS (not for localhost development)
+            ini_set('session.cookie_secure', isset($_SERVER['HTTPS']) ? '1' : '0');
             ini_set('session.use_only_cookies', '1');
-            ini_set('session.cookie_samesite', 'Strict');
+            // Use Lax for development compatibility with Safari, Strict for production
+            $samesite = (isset($_SERVER['HTTPS']) || $_SERVER['SERVER_NAME'] !== 'localhost') ? 'Strict' : 'Lax';
+            ini_set('session.cookie_samesite', $samesite);
             ini_set('session.gc_maxlifetime', (string)(Config::get('SESSION_TIMEOUT', 3600)));
             
             // Session name
